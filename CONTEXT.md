@@ -11,6 +11,7 @@
 - **State Management**: MobX
 - **Navigation**: React Navigation
 - **UI Component Library**: React Native Paper
+- **Database**: WatermelonDB (already a dependency in the base project)
 
 ## 🎯 Key Objectives
 1.  **Android First**: Primary target is Android due to SMS access permissions.
@@ -19,6 +20,7 @@
     -   **Agent 2 (Extractor)**: Extracts structured data (Amount, Merchant, Date, Type) from financial SMS.
 3.  **Local Intelligence**: Zero data egress.
 4.  **Indian Context**: Optimized for Indian financial SMS formats.
+5.  **Device Capability Awareness**: The app must detect device capabilities (RAM, CPU) at launch and select the best-performing LLM that can run on that device. If the device is not capable of running any suitable LLM, the user should be informed upfront before proceeding.
 
 ## 📱 MVP UI Structure
 1.  **Dashboard**:
@@ -30,23 +32,43 @@
     -   Chat interface with context-aware financial assistant.
     -   User can ask "How much did I spend on food?" or "What is my health score?".
 4.  **Settings**: Model management and preferences.
-
+ 
 ## 📂 Project Structure Highlights
-(Based on `PocketPal` structure)
 
+### Existing (from PocketPal)
 - `android/`: Native Android code. **Critical** for implementing the SMS Listener.
+- `src/screens/`: Current screens — `ChatScreen`, `ModelsScreen`, `PalsScreen`, `SettingsScreen`, `BenchmarkScreen`, `AboutScreen`, `DevToolsScreen`.
+- `src/store/`: MobX stores — `ModelStore.ts`, `ChatSessionStore.ts`, `PalStore.ts`, `HFStore.ts`, `UIStore.ts`, `BenchmarkStore.ts`, etc.
+- `src/services/`: Current services — `DeepLinkService.ts`, `downloads/`, `palshub/`.
+- `src/database/`: WatermelonDB setup — `schema.ts`, `migrations.ts`, `models/`.
+- `src/components/`: Reusable UI components (Chat, Markdown, Settings, etc.).
+
+### Planned (to be created)
 - `src/services/sms/`: SMS listening and retrieval logic.
 - `src/services/pipeline/`: The "Multi-Agent" workflow logic (Orchestrator).
-- `src/screens/`:
-    - `DashboardScreen/`: Main home summary.
-    - `TransactionsScreen/`: List view.
-    - `AssistantScreen/`: Chat interface.
+- `src/store/TransactionStore.ts`: MobX store for parsed transactions.
+- `src/screens/DashboardScreen/`: Main home summary.
+- `src/screens/TransactionsScreen/`: Transaction list view.
+- `src/screens/AssistantScreen/`: Chat interface reusing existing chat infrastructure.
 
 ## 🛠️ Transformation Roadmap
 
 ### Phase 1: Cleanup & Foundation
-- **Remove**: Pals, Roleplay, Public Hub browsing.
-- **Keep**: `llama.rn`, Model management.
+- **Remove**:
+  - Pals system: `PalsScreen/`, `PalStore.ts`, `PalsHub/`, `PalsSheets/`, Pal-related components.
+  - Roleplay and Public Hub browsing features.
+  - Cloud dependencies: `@supabase/supabase-js`, `@react-native-firebase/app`, `@react-native-firebase/app-check`, `@react-native-google-signin/google-signin` (conflicts with zero-data-egress vision).
+- **Keep**:
+  - `llama.rn` and model management infrastructure.
+  - `HFStore.ts` (HuggingFace model downloads).
+  - `ModelStore.ts` (LLM model lifecycle management).
+  - `ChatSessionStore.ts` (basis for AI Assistant).
+  - ESLint, Prettier, commitlint configs.
+- **Decide (per-screen)**:
+  - `ChatScreen` → evolves into `AssistantScreen` (financial context-aware).
+  - `BenchmarkScreen` / `DevToolsScreen` → keep during development, remove or hide for release.
+  - `AboutScreen` → keep, rebrand for Pocket-Financer.
+  - `SettingsScreen` → keep, extend with financial preferences.
 
 ### Phase 2: Android SMS Layer
 - **Permissions**: `READ_SMS`, `RECEIVE_SMS`.
@@ -56,7 +78,9 @@
 - **Classifier Agent**: Prompt to decide `Financial` vs `Non-Financial`.
 - **Extractor Agent**: JSON extraction prompt.
 - **Orchestrator**: TypeScript logic to chain these steps.
-- **Database**: WatermelonDB schema for `Transaction` and `Account`.
+- **Database**: Extend existing WatermelonDB schema with new `Transaction` and `Account` models (adding to the existing `src/database/` setup).
+- **State**: New `TransactionStore` (MobX) for managing parsed transaction data.
+- **Device Capability**: Detect device specs and auto-select the lightest viable LLM. Show a clear warning/blocker if the device cannot support any suitable model.
 
 ### Phase 4: UI Implementation
 - **Dashboard**: Implement the "Good Evening" card styles and health score.
