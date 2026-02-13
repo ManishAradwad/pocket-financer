@@ -87,6 +87,42 @@
 - **Transactions List**: Render extracted data.
 - **Chat Interface**: Re-use existing chat UI but connected to the financial context.
 
+## 💻 Development Environment
+
+### Host Setup
+- **Host OS**: Windows 11
+- **IDE**: Android Studio Otter 3 Feature Drop (2025.2.3) — runs on Windows
+- **Build Environment**: WSL2 (Ubuntu 24.04 LTS)
+- **Android SDK**: Windows-side SDK, accessed from WSL2 via `/mnt/c/Users/manis/AppData/Local/Android/Sdk`
+
+### WSL2 Toolchain
+| Tool | Version | Path / Notes |
+| --- | --- | --- |
+| JDK | OpenJDK 17 | `/usr/lib/jvm/java-17-openjdk-amd64` |
+| Node.js | 22.21.0 | Managed via `nvm` (`.nvmrc` in project root) |
+| yarn | 1.22.22 | Installed globally via npm |
+| Gradle | 9.0.0 | Via wrapper (`android/gradlew`) |
+| NDK | 27.3.13750724 | From Windows Android SDK |
+
+### Required Environment Variables (in `~/.bashrc`)
+```bash
+export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
+export ANDROID_HOME=/mnt/c/Users/manis/AppData/Local/Android/Sdk
+export PATH=$PATH:$ANDROID_HOME/platform-tools:$ANDROID_HOME/tools
+```
+
+### Build Commands (from WSL2 terminal, project root)
+```bash
+nvm use                              # Switch to Node 22.21.0
+yarn install                         # Install JS dependencies
+cd android && ./gradlew assembleDebug  # Build debug APK
+```
+
+### Important Files (not in version control)
+- `android/local.properties` — `sdk.dir` pointing to WSL2-accessible SDK path
+- `android/app/google-services.json` — Placeholder (Firebase to be removed in Phase 1)
+- `.env` — Created from `.env.example` with cloud features disabled
+
 ## 📝 Conventions
 - **Code Style**: ESLint + Prettier (existing config).
 - **Commits**: Conventional Commits (e.g., `feat: add sms listener`, `chore: remove pals`).
