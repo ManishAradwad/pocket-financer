@@ -1,6 +1,6 @@
 apply plugin: "com.android.application"
 apply plugin: "org.jetbrains.kotlin.android"
-apply plugin: "org.jetbrains.kotlin.kapt"
+apply plugin: "com.google.devtools.ksp"
 apply plugin: "com.facebook.react"
 
 // Add the Google Services plugin dependency
@@ -137,20 +137,6 @@ android {
     }
 }
 
-// Fix SQLite JDBC AccessDeniedException on Windows.
-// Room's DatabaseVerifier loads SQLite JDBC which tries to extract DLL to C:\WINDOWS\.
-// Disabling schema verification at compile time avoids the issue entirely.
-// This is a compile-time check only and does not affect runtime behavior.
-kapt {
-    arguments {
-        arg("room.schemaLocation", "$projectDir/schemas")
-    }
-    // Skip Room's compile-time schema verifier to avoid SQLite JDBC permission issue on Windows
-    javacOptions {
-        option("-Aroom.verifyDatabaseSchema=false")
-    }
-}
-
 dependencies {
     // The version of react-native is set by the React Native Gradle Plugin
     implementation("com.facebook.react:react-android")
@@ -172,7 +158,7 @@ dependencies {
     implementation("androidx.room:room-runtime:$room_version")
     // Kotlin Extensions and Coroutines support for Room
     implementation("androidx.room:room-ktx:$room_version")
-    kapt("androidx.room:room-compiler:$room_version")
+    ksp("androidx.room:room-compiler:$room_version")
     // WorkManager for DownloadModule
     implementation "androidx.work:work-runtime-ktx:2.10.5"
     // Lifecycle for DownloadModule
