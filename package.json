@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "prepare": "husky",
-    "postinstall": "./scripts/postinstall.sh",
+    "postinstall": "npx patch-package",
     "android": "react-native run-android",
     "build:android": "cd android && ./gradlew assembleDebug && cd ..",
     "build:android:release": "cd android && ./gradlew bundleRelease && cd ..",

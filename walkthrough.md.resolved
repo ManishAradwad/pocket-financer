@@ -1,0 +1,115 @@
+# WSL2 → Windows Migration: Summary & Status
+
+## Background
+The project was **directly copied** from a WSL2 (Linux) filesystem to native Windows. This caused multiple problems because Linux binaries, paths, and cached artifacts don't work on Windows.
+
+---
+
+## ✅ Issues Fixed
+
+### 1. Node.js & NVM
+- Installed Node 22.21.0 via NVM-Windows
+- Fixed `NVM_SYMLINK` to point to `C:\nvm4w\nodejs`
+
+### 2. Environment Variables
+- `JAVA_HOME` → `C:\Program Files\Android\Android Studio\jbr` (OpenJDK 21)
+- `ANDROID_HOME` → `C:\Users\manis\AppData\Local\Android\Sdk`
+
+### 3. Cross-Platform `postinstall` Script
+- Changed [package.json](file:///C:/Users/manis/Documents/pocket-financer/package.json) `postinstall` from `./scripts/postinstall.sh` → `npx patch-package`
+
+### 4. Gradle Version Downgrade
+- [gradle-wrapper.properties](file:///C:/Users/manis/Documents/pocket-financer/android/gradle/wrapper/gradle-wrapper.properties): Gradle 9.0.0 → **8.13** (9.0 had a `JvmVendorSpec.IBM_SEMERU` bug)
+
+### 5. Build Tools Version
+- [build.gradle](file:///C:/Users/manis/Documents/pocket-financer/android/build.gradle): Build Tools 36.0.0 → **36.1.0** (36.0.0 was corrupted, missing `d8.bat`)
+
+### 6. NDK 27.3 (Linux binaries)
+- The WSL2 copy had `linux-x86_64` prebuilt binaries instead of `windows-x86_64`
+- **Deleted** the broken copy. User reinstalled via Android Studio SDK Manager ✅
+
+### 7. CMake 3.22.1 (Linux binaries)
+- Same WSL2 issue — `cmake`, `ninja` etc. had no `.exe` extension (Linux ELF binaries)
+- **Deleted** the broken copy. User reinstalled via Android Studio SDK Manager ✅
+
+### 8. `yarn install`
+- Ran successfully after env setup, all patches applied ✅
+
+---
+
+## ❌ Remaining Issue: SQLite JDBC `AccessDeniedException`
+
+### The Error
+```
+java.nio.file.AccessDeniedException: C:\WINDOWS\sqlite-3.41.2.2-...-sqlitejdbc.dll.lck
+    at org.sqlite.SQLiteJDBCLoader.extractAndLoadLibraryFile(SQLiteJDBCLoader.java:214)
+```
+
+### What's Happening
+- **Room 2.8.2** (used for `DownloadModule`) uses **kapt** for annotation processing
+- Room's `DatabaseVerifier` loads **SQLite JDBC 3.41.2.2** at compile time
+- SQLite JDBC extracts its native DLL to a temp dir using `getTempDir()`:
+  ```java
+  private static File getTempDir() {
+      return new File(System.getProperty("org.sqlite.tmpdir", 
+                      System.getProperty("java.io.tmpdir")));
+  }
+  ```
+- The kapt worker JVM resolves `java.io.tmpdir` to **`C:\WINDOWS\`** instead of the user's temp dir
+- Writing to `C:\WINDOWS\` requires admin privileges → `AccessDeniedException`
+
+### What I Tried (ALL FAILED)
+| Approach | Why It Failed |
+|----------|--------------|
+| `org.gradle.jvmargs -Dorg.sqlite.tmpdir=...` | Only affects Gradle daemon JVM, not kapt worker |
+| `org.gradle.jvmargs -Djava.io.tmpdir=...` | Same — daemon only |
+| `systemProp.java.io.tmpdir=...` in `gradle.properties` | Not propagated to forked worker JVMs |
+| `systemProp.org.sqlite.tmpdir=...` | Same |
+| `kapt.use.worker.api=false` | Supposed to run kapt in daemon, but didn't work |
+| `_JAVA_OPTIONS` env var | Picked up by main JVM but not the kapt worker |
+| `JAVA_TOOL_OPTIONS` env var | Same issue |
+| Gradle init script (`~/.gradle/init.d/`) | Not executed in worker processes |
+| `kapt { javacOptions { option("-J-D...") } }` | Kapt ignores `-J` flags |
+| `kapt { javacOptions { option("-Aroom.verifyDatabaseSchema=false") } }` | Room 2.8.2 loads SQLite in `<clinit>`, ignoring this arg |
+
+### Suggested Approaches for Next Session
+
+1. **Run the terminal as Administrator** — simplest workaround, allows writing to `C:\WINDOWS\`
+
+2. **Set `TMP`/`TEMP` at the Windows System level** — the kapt worker likely inherits from the OS-level `TEMP` which may be `C:\WINDOWS\` (the Machine-level `TEMP` was `C:\WINDOWS\TEMP`, but it seems to resolve to `C:\WINDOWS\`). Check/fix in:
+   - Windows Settings → System → About → Advanced System Settings → Environment Variables → System Variables → `TEMP` and `TMP`
+
+3. **Migrate from kapt to KSP** — Room 2.8.2 supports KSP. Change:
+   ```diff
+   -apply plugin: "org.jetbrains.kotlin.kapt"
+   +apply plugin: "com.google.devtools.ksp"
+   -kapt("androidx.room:room-compiler:$room_version")
+   +ksp("androidx.room:room-compiler:$room_version")
+   ```
+   KSP uses a different worker mechanism that might handle tmpdir correctly.
+
+4. **Pre-extract the native DLL** and set `org.sqlite.lib.path`:
+   - The DLL is already extracted at `C:\Users\manis\.gradle\native-libs\sqlite-jdbc\sqlitejdbc.dll`
+   - If you can get `org.sqlite.lib.path` to the kapt worker, it loads from that path directly (no temp extraction)
+
+5. **Downgrade to Room 2.5.x** which uses an older SQLite JDBC that may handle temp dirs differently
+
+---
+
+## Files Modified During This Session
+
+| File | Change |
+|------|--------|
+| [package.json](file:///C:/Users/manis/Documents/pocket-financer/package.json) | `postinstall` → `npx patch-package` |
+| [gradle-wrapper.properties](file:///C:/Users/manis/Documents/pocket-financer/android/gradle/wrapper/gradle-wrapper.properties) | Gradle 9.0 → 8.13 |
+| [build.gradle](file:///C:/Users/manis/Documents/pocket-financer/android/build.gradle) (root) | Build Tools 36.0.0 → 36.1.0 |
+| [build.gradle](file:///C:/Users/manis/Documents/pocket-financer/android/app/build.gradle) (app) | Added `kapt` block (can be removed — didn't help) |
+| [gradle.properties](file:///C:/Users/manis/Documents/pocket-financer/android/gradle.properties) | Added tmpdir properties (can be simplified — didn't fix the issue) |
+
+## Files Created (Cleanup Candidates)
+- `C:\Users\manis\.gradle\init.d\sqlite-tmpdir.gradle` — can be deleted
+- `C:\Users\manis\.gradle\native-libs\sqlite-jdbc\sqlitejdbc.dll` — keep if trying approach #4
+
+## Build Status
+- **601 total Gradle tasks** — only **1-2 fail** (`:app:kaptDebugKotlin` and `:react-native-worklets:configureCMakeDebug` which was fixed)
+- The build is **99% complete** — just the SQLite JDBC permission issue remains
