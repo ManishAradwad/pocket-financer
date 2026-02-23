@@ -91,35 +91,53 @@
 
 ### Host Setup
 - **Host OS**: Windows 11
-- **IDE**: Android Studio Otter 3 Feature Drop (2025.2.3) — runs on Windows
-- **Build Environment**: WSL2 (Ubuntu 24.04 LTS)
-- **Android SDK**: Windows-side SDK, accessed from WSL2 via `/mnt/c/Users/manis/AppData/Local/Android/Sdk`
+- **IDE**: Android Studio Otter 3 Feature Drop (2025.2.3)
+- **Build Environment**: Native Windows (previously WSL2, migrated to Windows)
+- **Android SDK**: `C:\Users\manis\AppData\Local\Android\Sdk`
+- **Project Path**: `C:\Users\manis\Documents\pocket-financer`
 
-### WSL2 Toolchain
+### Windows Toolchain
 | Tool | Version | Path / Notes |
 | --- | --- | --- |
-| JDK | OpenJDK 17 | `/usr/lib/jvm/java-17-openjdk-amd64` |
-| Node.js | 22.21.0 | Managed via `nvm` (`.nvmrc` in project root) |
-| yarn | 1.22.22 | Installed globally via npm |
-| Gradle | 9.0.0 | Via wrapper (`android/gradlew`) |
-| NDK | 27.3.13750724 | From Windows Android SDK |
+| JDK | JDK 17 | Bundled with Android Studio or installed separately |
+| Node.js | 22.21.0 | Managed via `nvm-windows` (`.nvmrc` in project root) |
+| yarn | 1.22.22 | Installed globally via npm (`packageManager` field in `package.json`) |
+| Gradle | 8.13 | Via wrapper (`android/gradlew.bat`) |
+| NDK | 27.3.13750724 | Installed via Android Studio SDK Manager |
+| Kotlin | 2.1.20 | Set in `android/build.gradle` |
+| Build Tools | 36.1.0 | compileSdk / targetSdk: 36, minSdk: 26 |
 
-### Required Environment Variables (in `~/.bashrc`)
-```bash
-export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
-export ANDROID_HOME=/mnt/c/Users/manis/AppData/Local/Android/Sdk
-export PATH=$PATH:$ANDROID_HOME/platform-tools:$ANDROID_HOME/tools
+### Android Build Configuration
+| Property | Value |
+| --- | --- |
+| `compileSdkVersion` | 36 |
+| `targetSdkVersion` | 36 |
+| `minSdkVersion` | 26 |
+| `buildToolsVersion` | 36.1.0 |
+| `ndkVersion` | 27.3.13750724 |
+| `newArchEnabled` | true |
+| `hermesEnabled` | true |
+| `applicationId` | com.pocketpalai |
+| `ABI Filters` | arm64-v8a, x86_64 |
+
+### Required Environment Variables (Windows System/User variables)
+```
+JAVA_HOME = C:\Program Files\Java\jdk-17  (or Android Studio bundled JDK path)
+ANDROID_HOME = C:\Users\manis\AppData\Local\Android\Sdk
+PATH += %ANDROID_HOME%\platform-tools;%ANDROID_HOME%\tools
 ```
 
-### Build Commands (from WSL2 terminal, project root)
-```bash
-nvm use                              # Switch to Node 22.21.0
-yarn install                         # Install JS dependencies
-cd android && ./gradlew assembleDebug  # Build debug APK
+### Build Commands (from PowerShell / CMD, project root)
+```powershell
+nvm use 22.21.0                                  # Switch to Node 22.21.0
+yarn install                                      # Install JS dependencies
+cd android; .\gradlew.bat assembleDebug           # Build debug APK
+npx react-native run-android                      # Build & deploy to connected emulator/device
+npx react-native start                            # Start Metro bundler
 ```
 
 ### Important Files (not in version control)
-- `android/local.properties` — `sdk.dir` pointing to WSL2-accessible SDK path
+- `android/local.properties` — `sdk.dir` pointing to Windows Android SDK path (e.g., `C\:\\Users\\manis\\AppData\\Local\\Android\\Sdk`)
 - `android/app/google-services.json` — Placeholder (Firebase to be removed in Phase 1)
 - `.env` — Created from `.env.example` with cloud features disabled
 
