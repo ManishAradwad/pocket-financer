@@ -1,18 +1,18 @@
 import axios from 'axios';
-import {submitBenchmark} from '../benchmark';
-import * as utils from '../../utils/fb';
+import { submitBenchmark } from '../benchmark';
+
 import * as networkUtils from '../../utils';
-import {urls} from '../../config';
-import {DeviceInfo, BenchmarkResult} from '../../utils/types';
+import { urls } from '../../config';
+import { DeviceInfo, BenchmarkResult } from '../../utils/types';
 
 jest.mock('axios');
-jest.mock('../../utils/fb');
+
 jest.mock('../../utils', () => {
   const originalModule = jest.requireActual('../../utils');
   return {
     ...originalModule,
     checkConnectivity: jest.fn(),
-    initializeAppCheck: jest.fn(),
+
     NetworkError: class NetworkError extends Error {
       constructor(message) {
         super(message);
@@ -35,7 +35,7 @@ jest.mock('../../utils', () => {
 });
 
 const mockedAxios = axios as jest.Mocked<typeof axios>;
-const mockedFb = utils as jest.Mocked<typeof utils>;
+
 const mockedNetworkUtils = networkUtils as jest.Mocked<typeof networkUtils>;
 
 describe('submitBenchmark', () => {
@@ -105,7 +105,7 @@ describe('submitBenchmark', () => {
   beforeEach(() => {
     jest.clearAllMocks();
 
-    mockedFb.getAppCheckToken.mockResolvedValue(mockAppCheckToken);
+
     mockedNetworkUtils.checkConnectivity.mockResolvedValue(true);
     mockedAxios.post.mockResolvedValue(mockResponse);
     mockedAxios.isAxiosError.mockReturnValue(true);
@@ -114,8 +114,6 @@ describe('submitBenchmark', () => {
   it('should successfully submit benchmark data', async () => {
     const result = await submitBenchmark(mockDeviceInfo, mockBenchmarkResult);
 
-    // Verify AppCheck initialization and token retrieval
-    expect(mockedFb.getAppCheckToken).toHaveBeenCalled();
 
     // Verify API call
     expect(mockedAxios.post).toHaveBeenCalledWith(
@@ -150,15 +148,7 @@ describe('submitBenchmark', () => {
     expect(mockedAxios.post).not.toHaveBeenCalled();
   });
 
-  it('should throw AppCheckError when AppCheck token is not available', async () => {
-    mockedFb.getAppCheckToken.mockResolvedValue('');
 
-    await expect(
-      submitBenchmark(mockDeviceInfo, mockBenchmarkResult),
-    ).rejects.toThrowError(networkUtils.AppCheckError);
-
-    expect(mockedAxios.post).not.toHaveBeenCalled();
-  });
 
   it('should throw NetworkError on axios network error', async () => {
     const error = {
@@ -235,13 +225,5 @@ describe('submitBenchmark', () => {
     ).rejects.toThrowError(networkUtils.ServerError);
   });
 
-  it('should handle AppCheck initialization errors', async () => {
-    mockedNetworkUtils.initializeAppCheck.mockImplementation(() => {
-      throw new Error('AppCheck init error');
-    });
 
-    await expect(
-      submitBenchmark(mockDeviceInfo, mockBenchmarkResult),
-    ).rejects.toThrowError(networkUtils.AppCheckError);
-  });
 });

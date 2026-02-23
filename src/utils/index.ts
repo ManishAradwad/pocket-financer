@@ -1,18 +1,18 @@
 import * as React from 'react';
-import {ColorValue} from 'react-native';
+import { ColorValue } from 'react-native';
 
 import _ from 'lodash';
 import dayjs from 'dayjs';
-import {MD3Theme} from 'react-native-paper';
+import { MD3Theme } from 'react-native-paper';
 import DeviceInfo from 'react-native-device-info';
 import Blob from 'react-native/Libraries/Blob/Blob';
 import * as RNFS from '@dr.pogodin/react-native-fs';
 
-import {l10n} from './l10n';
-import {modelStore} from '../store';
-import {getHFDefaultSettings} from './chat';
-import {formatBytes, formatNumber} from './formatters';
-import {getVerboseDateTimeRepresentation} from './formatters';
+import { l10n } from './l10n';
+import { modelStore } from '../store';
+import { getHFDefaultSettings } from './chat';
+import { formatBytes, formatNumber } from './formatters';
+import { getVerboseDateTimeRepresentation } from './formatters';
 import {
   HuggingFaceModel,
   MessageType,
@@ -50,13 +50,13 @@ export const getUserAvatarNameColor = (user: User, colors: ColorValue[]) =>
   colors[hashCode(user.id) % colors.length];
 
 /** Returns user initials (can have only first letter of firstName/lastName or both) */
-export const getUserInitials = ({firstName, lastName}: User) =>
+export const getUserInitials = ({ firstName, lastName }: User) =>
   `${firstName?.charAt(0) ?? ''}${lastName?.charAt(0) ?? ''}`
     .toUpperCase()
     .trim();
 
 /** Returns user name as joined firstName and lastName */
-export const getUserName = ({firstName, lastName}: User) =>
+export const getUserName = ({ firstName, lastName }: User) =>
   `${firstName ?? ''} ${lastName ?? ''}`.trim();
 
 /** Returns hash code of the provided text */
@@ -79,7 +79,7 @@ export const hashCode = (text = '') => {
 
 /** Inits dayjs locale */
 export const initLocale = (locale?: keyof typeof l10n) => {
-  const locales: {[key in keyof typeof l10n]: unknown} = {
+  const locales: { [key in keyof typeof l10n]: unknown } = {
     en: require('dayjs/locale/en'),
     // es: require('dayjs/locale/es'),
     // ko: require('dayjs/locale/ko'),
@@ -185,7 +185,7 @@ export const calculateChatMessages = (
           dateFormat,
           timeFormat,
         });
-      chatMessages = [{id: text, text, type: 'dateHeader'}, ...chatMessages];
+      chatMessages = [{ id: text, text, type: 'dateHeader' }, ...chatMessages];
     }
 
     chatMessages = [
@@ -226,7 +226,7 @@ export const calculateChatMessages = (
     }
 
     if (message.type === 'image') {
-      gallery = [...gallery, {id: message.id, uri: message.uri}];
+      gallery = [...gallery, { id: message.id, uri: message.uri }];
     }
   }
 
@@ -241,8 +241,8 @@ export const excludeDerivedMessageProps = (
   message: MessageType.DerivedMessage,
 ) => {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const {nextMessageInGroup, offset, showName, showStatus, ...rest} = message;
-  return {...rest} as MessageType.Any;
+  const { nextMessageInGroup, offset, showName, showStatus, ...rest } = message;
+  return { ...rest } as MessageType.Any;
 };
 
 export function roundToBillion(num: number) {
@@ -294,16 +294,16 @@ export const getModelDescription = (
   // Get size and params from context if the model is active.
   // This is relevant only for local models (when we don't know size/params upfront),
   // otherwise the values should be the same.
-  const {size, params} =
+  const { size, params } =
     isActiveModel && modelStore.context?.model
       ? {
-          size: modelStore.context.model.size,
-          params: modelStore.context.model.nParams,
-        }
+        size: modelStore.context.model.size,
+        params: modelStore.context.model.nParams,
+      }
       : {
-          size: model.size,
-          params: model.params,
-        };
+        size: model.size,
+        params: model.params,
+      };
 
   const notAvailable = l10nData.models.modelDescription.notAvailable;
   let sizeString = size > 0 ? formatBytes(size) : notAvailable;
@@ -466,7 +466,7 @@ export function hfAsModel(
     defaultChatTemplate: defaultSettings.chatTemplate,
     chatTemplate: _.cloneDeep(defaultSettings.chatTemplate),
     defaultCompletionSettings: defaultSettings.completionParams,
-    completionSettings: {...defaultSettings.completionParams},
+    completionSettings: { ...defaultSettings.completionParams },
     defaultStopWords: defaultSettings.completionParams.stop,
     stopWords: defaultSettings.completionParams.stop,
     hfModelFile: modelFile,
@@ -614,7 +614,7 @@ export const safeParseJSON = (json: string) => {
   } catch (error) {
     console.log('Original json: ', json);
     console.error('Error parsing JSON:', error);
-    return {prompt: '', error: error};
+    return { prompt: '', error: error };
   }
 };
 
@@ -793,7 +793,6 @@ export function getQuantRank(level: string): number {
 
 export * from './cacheUtils';
 export * from './errors';
-export * from './fb';
 export * from './formatters';
 export * from './multimodalHelpers';
 export * from './network';

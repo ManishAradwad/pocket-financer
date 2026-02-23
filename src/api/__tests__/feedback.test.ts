@@ -1,9 +1,9 @@
 import axios from 'axios';
-import {Platform} from 'react-native';
+import { Platform } from 'react-native';
 import DeviceInfo from 'react-native-device-info';
-import {submitFeedback, submitContentReport} from '../feedback';
+import { submitFeedback, submitContentReport } from '../feedback';
 import * as utils from '../../utils';
-import {urls} from '../../config';
+import { urls } from '../../config';
 
 // Mock dependencies
 jest.mock('axios');
@@ -13,8 +13,7 @@ jest.mock('../../utils', () => {
   return {
     ...originalModule,
     checkConnectivity: jest.fn(),
-    getAppCheckToken: jest.fn(),
-    initializeAppCheck: jest.fn(),
+
     NetworkError: class NetworkError extends Error {
       constructor(message) {
         super(message);
@@ -66,7 +65,7 @@ describe('submitFeedback', () => {
     // Default mocks for success case
     Platform.OS = 'ios';
     mockedUtils.checkConnectivity.mockResolvedValue(true);
-    mockedUtils.getAppCheckToken.mockResolvedValue(mockAppCheckToken);
+
     mockedDeviceInfo.getVersion.mockReturnValue('1.0.0');
     mockedDeviceInfo.getBuildNumber.mockReturnValue('100');
     mockedAxios.post.mockResolvedValue(mockResponse);
@@ -79,9 +78,6 @@ describe('submitFeedback', () => {
     // Verify connectivity check
     expect(mockedUtils.checkConnectivity).toHaveBeenCalled();
 
-    // Verify AppCheck initialization and token retrieval
-    expect(mockedUtils.initializeAppCheck).toHaveBeenCalled();
-    expect(mockedUtils.getAppCheckToken).toHaveBeenCalled();
 
     // Verify API call
     expect(mockedAxios.post).toHaveBeenCalledWith(
@@ -117,15 +113,7 @@ describe('submitFeedback', () => {
     expect(mockedAxios.post).not.toHaveBeenCalled();
   });
 
-  it('should throw AppCheckError when AppCheck token is not available', async () => {
-    mockedUtils.getAppCheckToken.mockResolvedValue('');
 
-    await expect(submitFeedback(mockFeedbackData)).rejects.toThrowError(
-      utils.AppCheckError,
-    );
-
-    expect(mockedAxios.post).not.toHaveBeenCalled();
-  });
 
   it('should throw NetworkError on axios network error', async () => {
     const error = {
@@ -202,15 +190,7 @@ describe('submitFeedback', () => {
     );
   });
 
-  it('should handle AppCheck initialization errors', async () => {
-    mockedUtils.initializeAppCheck.mockImplementation(() => {
-      throw new Error('AppCheck init error');
-    });
 
-    await expect(submitFeedback(mockFeedbackData)).rejects.toThrowError(
-      utils.AppCheckError,
-    );
-  });
 
   it('should propagate unknown errors', async () => {
     const unknownError = new Error('Unknown error');
@@ -222,14 +202,7 @@ describe('submitFeedback', () => {
     );
   });
 
-  it('should handle different platform messages', async () => {
-    Platform.OS = 'android';
-    mockedUtils.getAppCheckToken.mockResolvedValue('');
 
-    await expect(submitFeedback(mockFeedbackData)).rejects.toThrowError(
-      utils.AppCheckError,
-    );
-  });
 });
 
 describe('submitContentReport', () => {
@@ -255,8 +228,7 @@ describe('submitContentReport', () => {
     // Default mocks for success case
     Platform.OS = 'ios';
     mockedUtils.checkConnectivity.mockResolvedValue(true);
-    mockedUtils.initializeAppCheck.mockResolvedValue();
-    mockedUtils.getAppCheckToken.mockResolvedValue(mockAppCheckToken);
+
     mockedDeviceInfo.getVersion.mockReturnValue('1.0.0');
     mockedDeviceInfo.getBuildNumber.mockReturnValue('100');
     mockedAxios.post.mockResolvedValue(mockResponse);
@@ -269,9 +241,6 @@ describe('submitContentReport', () => {
     // Verify connectivity check
     expect(mockedUtils.checkConnectivity).toHaveBeenCalled();
 
-    // Verify AppCheck initialization and token retrieval
-    expect(mockedUtils.initializeAppCheck).toHaveBeenCalled();
-    expect(mockedUtils.getAppCheckToken).toHaveBeenCalled();
 
     // Verify API call
     expect(mockedAxios.post).toHaveBeenCalledWith(
@@ -307,15 +276,7 @@ describe('submitContentReport', () => {
     expect(mockedAxios.post).not.toHaveBeenCalled();
   });
 
-  it('should throw AppCheckError when AppCheck token is not available', async () => {
-    mockedUtils.getAppCheckToken.mockResolvedValue('');
 
-    await expect(submitContentReport(mockReportData)).rejects.toThrowError(
-      utils.AppCheckError,
-    );
-
-    expect(mockedAxios.post).not.toHaveBeenCalled();
-  });
 
   it('should handle axios network error', async () => {
     const error = {
@@ -355,18 +316,5 @@ describe('submitContentReport', () => {
     await expect(submitContentReport(mockReportData)).rejects.toThrow();
   });
 
-  it('should handle AppCheck initialization errors', async () => {
-    mockedUtils.initializeAppCheck.mockImplementation(() => {
-      throw new Error('AppCheck init error');
-    });
 
-    await expect(submitContentReport(mockReportData)).rejects.toThrow();
-  });
-
-  it('should handle different platform messages for Android', async () => {
-    Platform.OS = 'android';
-    mockedUtils.getAppCheckToken.mockResolvedValue('');
-
-    await expect(submitContentReport(mockReportData)).rejects.toThrow();
-  });
 });

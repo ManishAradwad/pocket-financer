@@ -1,32 +1,31 @@
 import * as React from 'react';
-import {Dimensions, StyleSheet} from 'react-native';
+import { Dimensions, StyleSheet } from 'react-native';
 
-import {observer} from 'mobx-react';
-import {NavigationContainer} from '@react-navigation/native';
-import {Provider as PaperProvider} from 'react-native-paper';
-import {BottomSheetModalProvider} from '@gorhom/bottom-sheet';
-import {createDrawerNavigator} from '@react-navigation/drawer';
-import {SafeAreaProvider} from 'react-native-safe-area-context';
-import {KeyboardProvider} from 'react-native-keyboard-controller';
+import { observer } from 'mobx-react';
+import { NavigationContainer } from '@react-navigation/native';
+import { Provider as PaperProvider } from 'react-native-paper';
+import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
+import { createDrawerNavigator } from '@react-navigation/drawer';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { KeyboardProvider } from 'react-native-keyboard-controller';
 import {
   gestureHandlerRootHOC,
   GestureHandlerRootView,
 } from 'react-native-gesture-handler';
 
-import {uiStore} from './src/store';
-import {useTheme} from './src/hooks';
-import {useDeepLinking} from './src/hooks/useDeepLinking';
-import {Theme} from './src/utils/types';
+import { uiStore } from './src/store';
+import { useTheme } from './src/hooks';
+import { useDeepLinking } from './src/hooks/useDeepLinking';
+import { Theme } from './src/utils/types';
 
-import {l10n} from './src/utils/l10n';
-import {initLocale} from './src/utils';
-import {L10nContext} from './src/utils';
-import {ROUTES} from './src/utils/navigationConstants';
+import { l10n } from './src/utils/l10n';
+import { initLocale } from './src/utils';
+import { L10nContext } from './src/utils';
+import { ROUTES } from './src/utils/navigationConstants';
 
 import {
   SidebarContent,
   ModelsHeaderRight,
-  PalHeaderRight,
   HeaderLeft,
   AppWithMigration,
 } from './src/components';
@@ -40,7 +39,6 @@ import {
   // Dev tools screen. Only available in debug mode.
   DevToolsScreen,
 } from './src/screens';
-import PalsScreen from './src/screens/PalsScreen';
 
 // Check if app is in debug mode
 const isDebugMode = __DEV__;
@@ -92,15 +90,6 @@ const App = observer(() => {
                       component={gestureHandlerRootHOC(ChatScreen)}
                       options={{
                         headerShown: false,
-                      }}
-                    />
-                    <Drawer.Screen
-                      name={ROUTES.PALS}
-                      component={gestureHandlerRootHOC(PalsScreen)}
-                      options={{
-                        headerRight: () => <PalHeaderRight />,
-                        headerStyle: styles.headerWithoutDivider,
-                        title: currentL10n.screenTitles.pals,
                       }}
                     />
                     <Drawer.Screen

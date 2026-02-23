@@ -1,10 +1,10 @@
 jest.unmock('../ChatSessionStore'); // this is not really needed, as only importing from store is mocked.
 
-import {chatSessionStore, defaultCompletionSettings} from '../ChatSessionStore';
-import {chatSessionRepository} from '../../repositories/ChatSessionRepository';
+import { chatSessionStore, defaultCompletionSettings } from '../ChatSessionStore';
+import { chatSessionRepository } from '../../repositories/ChatSessionRepository';
 
-import {MessageType} from '../../utils/types';
-import {waitFor} from '@testing-library/react-native';
+import { MessageType } from '../../utils/types';
+import { waitFor } from '@testing-library/react-native';
 
 // Use the mock from __mocks__/repositories/ChatSessionRepository.js
 //jest.mock('../../repositories/ChatSessionRepository');
@@ -21,14 +21,14 @@ jest.spyOn(chatSessionRepository, 'updateSessionTitle');
 jest.spyOn(chatSessionRepository, 'updateSessionCompletionSettings');
 jest.spyOn(chatSessionRepository, 'getGlobalCompletionSettings');
 jest.spyOn(chatSessionRepository, 'saveGlobalCompletionSettings');
-jest.spyOn(chatSessionRepository, 'setSessionActivePal');
+
 
 describe('chatSessionStore', () => {
   const mockMessage = {
     id: 'message1',
     text: 'Hello, world!',
     type: 'text',
-    author: {id: 'user1', name: 'User'},
+    author: { id: 'user1', name: 'User' },
     createdAt: Date.now(),
   } as MessageType.Text;
 
@@ -99,7 +99,7 @@ describe('chatSessionStore', () => {
           date: new Date().toISOString(),
           messages: [],
           completionSettings: defaultCompletionSettings,
-          settingsSource: 'pal',
+
         },
       ];
       (chatSessionRepository.deleteSession as jest.Mock).mockResolvedValue(
@@ -123,7 +123,7 @@ describe('chatSessionStore', () => {
           date: new Date().toISOString(),
           messages: [],
           completionSettings: defaultCompletionSettings,
-          settingsSource: 'pal',
+
         },
       ];
       (chatSessionRepository.deleteSession as jest.Mock).mockRejectedValue(
@@ -183,7 +183,7 @@ describe('chatSessionStore', () => {
         date: new Date().toISOString(),
         messages: [],
         completionSettings: defaultCompletionSettings,
-        settingsSource: 'pal' as 'pal' | 'custom',
+
       };
       chatSessionStore.sessions = [mockSession];
       chatSessionStore.activeSessionId = mockSession.id;
@@ -207,7 +207,7 @@ describe('chatSessionStore', () => {
         date: new Date().toISOString(),
         messages: [mockMessage],
         completionSettings: defaultCompletionSettings,
-        settingsSource: 'pal' as 'pal' | 'custom',
+
       };
       chatSessionStore.sessions = [mockSession];
       chatSessionStore.activeSessionId = mockSession.id;
@@ -216,7 +216,7 @@ describe('chatSessionStore', () => {
         undefined,
       );
 
-      const updatedMessage = {text: 'Updated message text'};
+      const updatedMessage = { text: 'Updated message text' };
       await chatSessionStore.updateMessage(
         mockMessage.id,
         mockSession.id,
@@ -241,7 +241,7 @@ describe('chatSessionStore', () => {
         date: new Date().toISOString(),
         messages: [mockMessage],
         completionSettings: defaultCompletionSettings,
-        settingsSource: 'pal' as 'pal' | 'custom',
+
       };
 
       (chatSessionRepository.updateSessionTitle as jest.Mock).mockResolvedValue(
@@ -263,9 +263,9 @@ describe('chatSessionStore', () => {
         id: 'session1',
         title: 'New Session',
         date: new Date().toISOString(),
-        messages: [{...mockMessage, text: longMessage}],
+        messages: [{ ...mockMessage, text: longMessage }],
         completionSettings: defaultCompletionSettings,
-        settingsSource: 'pal' as 'pal' | 'custom',
+
       };
 
       (chatSessionRepository.updateSessionTitle as jest.Mock).mockResolvedValue(
@@ -336,7 +336,7 @@ describe('chatSessionStore', () => {
           ...defaultCompletionSettings,
           temperature: 0.9,
         },
-        settingsSource: 'pal' as 'pal' | 'custom',
+
       };
       chatSessionStore.sessions = [originalSession];
       chatSessionStore.activeSessionId = originalSession.id;
@@ -415,7 +415,7 @@ describe('chatSessionStore', () => {
         date: new Date().toISOString(),
         messages: [mockMessage],
         completionSettings: defaultCompletionSettings,
-        settingsSource: 'pal' as 'pal' | 'custom',
+
       };
       chatSessionStore.sessions = [session];
       chatSessionStore.activeSessionId = session.id;
@@ -443,7 +443,7 @@ describe('chatSessionStore', () => {
           date: today.toISOString(),
           messages: [],
           completionSettings: defaultCompletionSettings,
-          settingsSource: 'pal',
+
         },
         {
           id: '2',
@@ -451,7 +451,7 @@ describe('chatSessionStore', () => {
           date: yesterday.toISOString(),
           messages: [],
           completionSettings: defaultCompletionSettings,
-          settingsSource: 'pal',
+
         },
         {
           id: '3',
@@ -459,7 +459,7 @@ describe('chatSessionStore', () => {
           date: lastWeek.toISOString(),
           messages: [],
           completionSettings: defaultCompletionSettings,
-          settingsSource: 'pal',
+
         },
       ];
 
@@ -481,7 +481,7 @@ describe('chatSessionStore', () => {
           ...defaultCompletionSettings,
           temperature: 0.7,
         },
-        settingsSource: 'pal' as 'pal' | 'custom',
+
       };
 
       chatSessionStore.sessions = [originalSession];
@@ -551,7 +551,7 @@ describe('chatSessionStore', () => {
         date: new Date().toISOString(),
         messages: [] as MessageType.Any[],
         completionSettings: defaultCompletionSettings,
-        settingsSource: 'pal' as 'pal' | 'custom',
+
       };
       chatSessionStore.sessions = [session];
       chatSessionStore.activeSessionId = session.id;
@@ -580,7 +580,7 @@ describe('chatSessionStore', () => {
         date: new Date().toISOString(),
         messages: [],
         completionSettings: defaultCompletionSettings,
-        settingsSource: 'pal' as 'pal' | 'custom',
+
       };
       chatSessionStore.sessions = [session];
 
@@ -607,7 +607,7 @@ describe('chatSessionStore', () => {
         date: new Date().toISOString(),
         messages: [],
         completionSettings: defaultCompletionSettings,
-        settingsSource: 'pal' as 'pal' | 'custom',
+
       };
       chatSessionStore.sessions = [session];
 
@@ -636,7 +636,7 @@ describe('chatSessionStore', () => {
         date: new Date().toISOString(),
         messages: [],
         completionSettings: defaultCompletionSettings,
-        settingsSource: 'pal' as 'pal' | 'custom',
+
       };
       chatSessionStore.sessions = [session];
       chatSessionStore.activeSessionId = session.id;
@@ -753,7 +753,7 @@ describe('chatSessionStore', () => {
       id: 'message2',
       text: 'Second message',
       type: 'text',
-      author: {id: 'assistant', name: 'Assistant'},
+      author: { id: 'assistant', name: 'Assistant' },
       createdAt: Date.now() - 1000,
     } as MessageType.Text;
 
@@ -761,7 +761,7 @@ describe('chatSessionStore', () => {
       id: 'message3',
       text: 'Third message',
       type: 'text',
-      author: {id: 'user1', name: 'User'},
+      author: { id: 'user1', name: 'User' },
       createdAt: Date.now(),
     } as MessageType.Text;
 
@@ -776,7 +776,7 @@ describe('chatSessionStore', () => {
           mockMessage, // oldest - user (message1)
         ],
         completionSettings: defaultCompletionSettings,
-        settingsSource: 'pal' as 'pal' | 'custom',
+
       };
       chatSessionStore.sessions = [session];
       chatSessionStore.activeSessionId = 'session1';
@@ -827,7 +827,7 @@ describe('chatSessionStore', () => {
       id: 'message2',
       text: 'Second message',
       type: 'text',
-      author: {id: 'assistant', name: 'Assistant'},
+      author: { id: 'assistant', name: 'Assistant' },
       createdAt: Date.now() - 1000,
     } as MessageType.Text;
 
@@ -835,7 +835,7 @@ describe('chatSessionStore', () => {
       id: 'message3',
       text: 'Third message',
       type: 'text',
-      author: {id: 'user1', name: 'User'},
+      author: { id: 'user1', name: 'User' },
       createdAt: Date.now(),
     } as MessageType.Text;
 
@@ -850,7 +850,7 @@ describe('chatSessionStore', () => {
           mockMessage, // oldest - user (message1)
         ],
         completionSettings: defaultCompletionSettings,
-        settingsSource: 'pal' as 'pal' | 'custom',
+
       };
       chatSessionStore.sessions = [session];
       chatSessionStore.activeSessionId = 'session1';
@@ -945,7 +945,7 @@ describe('chatSessionStore', () => {
         id: 'message1',
         text: 'Hello, world!',
         type: 'text',
-        author: {id: 'user1', name: 'User'},
+        author: { id: 'user1', name: 'User' },
         createdAt: mockTime,
       } as MessageType.Text;
 
@@ -955,7 +955,7 @@ describe('chatSessionStore', () => {
         date: new Date().toISOString(),
         messages: [testMessage],
         completionSettings: defaultCompletionSettings,
-        settingsSource: 'pal' as 'pal' | 'custom',
+
       };
       chatSessionStore.sessions = [session];
       chatSessionStore.activeSessionId = 'session1';
@@ -971,7 +971,7 @@ describe('chatSessionStore', () => {
     });
 
     it('should apply update immediately when no throttle is active', () => {
-      const update = {text: 'Streaming text...'};
+      const update = { text: 'Streaming text...' };
 
       chatSessionStore.updateMessageStreaming(
         testMessage.id,
@@ -1007,9 +1007,9 @@ describe('chatSessionStore', () => {
     it('should merge metadata with existing metadata', () => {
       // Set initial metadata
       (chatSessionStore.sessions[0].messages[0] as MessageType.Text).metadata =
-        {
-          existingKey: 'existing value',
-        };
+      {
+        existingKey: 'existing value',
+      };
 
       chatSessionStore.updateMessageStreaming(testMessage.id, 'session1', {
         metadata: {
@@ -1025,7 +1025,7 @@ describe('chatSessionStore', () => {
     });
 
     it('should persist updates to database asynchronously', () => {
-      const update = {text: 'Persisted text'};
+      const update = { text: 'Persisted text' };
 
       chatSessionStore.updateMessageStreaming(
         testMessage.id,
@@ -1043,7 +1043,7 @@ describe('chatSessionStore', () => {
       chatSessionStore.updateMessageStreaming(
         testMessage.id,
         'non-existent-session',
-        {text: 'test'},
+        { text: 'test' },
       );
 
       // Should not throw, just silently fail
@@ -1072,7 +1072,7 @@ describe('chatSessionStore', () => {
         id: 'image-msg',
         type: 'image',
         uri: 'file://image.jpg',
-        author: {id: 'user1'},
+        author: { id: 'user1' },
         createdAt: Date.now(),
       } as MessageType.Image;
 
@@ -1087,7 +1087,7 @@ describe('chatSessionStore', () => {
     });
 
     it('should use activeSessionId when sessionId parameter is empty', () => {
-      const update = {text: 'Active session update'};
+      const update = { text: 'Active session update' };
 
       chatSessionStore.updateMessageStreaming(testMessage.id, '', update);
 
@@ -1099,7 +1099,7 @@ describe('chatSessionStore', () => {
     it('should handle database persistence errors gracefully', async () => {
       const consoleErrorSpy = jest
         .spyOn(console, 'error')
-        .mockImplementation(() => {});
+        .mockImplementation(() => { });
 
       (chatSessionRepository.updateMessage as jest.Mock).mockRejectedValueOnce(
         new Error('DB write failed'),
@@ -1126,80 +1126,7 @@ describe('chatSessionStore', () => {
     });
   });
 
-  describe('pal management', () => {
-    it('gets active pal ID from active session', () => {
-      const session = {
-        id: 'session1',
-        title: 'Session 1',
-        date: new Date().toISOString(),
-        messages: [],
-        completionSettings: defaultCompletionSettings,
-        activePalId: 'pal1',
-        settingsSource: 'pal' as 'pal' | 'custom',
-      };
-      chatSessionStore.sessions = [session];
-      chatSessionStore.activeSessionId = 'session1';
 
-      expect(chatSessionStore.activePalId).toBe('pal1');
-    });
-
-    it('gets active pal ID from newChatPalId when no active session', () => {
-      chatSessionStore.newChatPalId = 'pal2';
-
-      expect(chatSessionStore.activePalId).toBe('pal2');
-    });
-
-    it('sets active pal ID for active session', async () => {
-      const session = {
-        id: 'session1',
-        title: 'Session 1',
-        date: new Date().toISOString(),
-        messages: [],
-        completionSettings: defaultCompletionSettings,
-        settingsSource: 'pal' as 'pal' | 'custom',
-      };
-      chatSessionStore.sessions = [session];
-      chatSessionStore.activeSessionId = 'session1';
-
-      await chatSessionStore.setActivePal('pal1');
-
-      expect(chatSessionStore.sessions[0].activePalId).toBe('pal1');
-    });
-
-    it('sets newChatPalId when no active session', async () => {
-      await chatSessionStore.setActivePal('pal2');
-
-      expect(chatSessionStore.newChatPalId).toBe('pal2');
-    });
-
-    it('preserves active pal ID when resetting active session', () => {
-      const session = {
-        id: 'session1',
-        title: 'Session 1',
-        date: new Date().toISOString(),
-        messages: [],
-        completionSettings: defaultCompletionSettings,
-        activePalId: 'pal1',
-        settingsSource: 'pal' as 'pal' | 'custom',
-      };
-      chatSessionStore.sessions = [session];
-      chatSessionStore.activeSessionId = 'session1';
-
-      chatSessionStore.resetActiveSession();
-
-      expect(chatSessionStore.newChatPalId).toBe('pal1');
-      expect(chatSessionStore.activeSessionId).toBeNull();
-    });
-
-    it('applies newChatPalId when creating a new session', async () => {
-      chatSessionStore.newChatPalId = 'pal1';
-
-      await chatSessionStore.createNewSession('New Session');
-
-      expect(chatSessionStore.sessions[0].activePalId).toBe('pal1');
-      expect(chatSessionStore.newChatPalId).toBeUndefined();
-    });
-  });
 
   describe('lazy loading', () => {
     it('setActiveSession loads messages on first access', async () => {
@@ -1209,7 +1136,7 @@ describe('chatSessionStore', () => {
         date: new Date().toISOString(),
         messages: [],
         completionSettings: defaultCompletionSettings,
-        settingsSource: 'pal' as 'pal' | 'custom',
+
         messagesLoaded: false,
       };
 
@@ -1221,7 +1148,7 @@ describe('chatSessionStore', () => {
             id: 'msg1',
             text: 'Hello',
             type: 'text',
-            author: {id: 'user1'},
+            author: { id: 'user1' },
             createdAt: Date.now(),
           }),
         },
@@ -1230,7 +1157,7 @@ describe('chatSessionStore', () => {
             id: 'msg2',
             text: 'World',
             type: 'text',
-            author: {id: 'user1'},
+            author: { id: 'user1' },
             createdAt: Date.now(),
           }),
         },
@@ -1239,7 +1166,7 @@ describe('chatSessionStore', () => {
       const mockSessionData = {
         session: mockSession,
         messages: mockMessages,
-        completionSettings: {getSettings: () => defaultCompletionSettings},
+        completionSettings: { getSettings: () => defaultCompletionSettings },
       };
 
       (chatSessionRepository.getSessionById as jest.Mock).mockResolvedValue(
@@ -1263,7 +1190,7 @@ describe('chatSessionStore', () => {
         id: 'msg1',
         text: 'Hello',
         type: 'text',
-        author: {id: 'user1'},
+        author: { id: 'user1' },
         createdAt: Date.now(),
       } as MessageType.Text;
 
@@ -1273,7 +1200,7 @@ describe('chatSessionStore', () => {
         date: new Date().toISOString(),
         messages: [cachedMessage],
         completionSettings: defaultCompletionSettings,
-        settingsSource: 'pal' as 'pal' | 'custom',
+
         messagesLoaded: true,
       };
 
@@ -1294,7 +1221,7 @@ describe('chatSessionStore', () => {
         date: new Date().toISOString(),
         messages: [],
         completionSettings: defaultCompletionSettings,
-        settingsSource: 'pal' as 'pal' | 'custom',
+
         messagesLoaded: false,
       };
 
@@ -1306,7 +1233,7 @@ describe('chatSessionStore', () => {
             id: 'msg1',
             text: 'Hello',
             type: 'text',
-            author: {id: 'user1'},
+            author: { id: 'user1' },
             createdAt: Date.now(),
           }),
         },
@@ -1315,7 +1242,7 @@ describe('chatSessionStore', () => {
       const mockSessionData = {
         session: mockSession,
         messages: mockMessages,
-        completionSettings: {getSettings: () => defaultCompletionSettings},
+        completionSettings: { getSettings: () => defaultCompletionSettings },
       };
 
       (chatSessionRepository.getSessionById as jest.Mock).mockResolvedValue(
@@ -1343,7 +1270,7 @@ describe('chatSessionStore', () => {
           id: 'msg1',
           text: 'Hello',
           type: 'text',
-          author: {id: 'user1'},
+          author: { id: 'user1' },
           createdAt: Date.now(),
         }),
       };
@@ -1377,7 +1304,7 @@ describe('chatSessionStore', () => {
         id: 'msg1',
         text: 'Hello',
         type: 'text',
-        author: {id: 'user1'},
+        author: { id: 'user1' },
         createdAt: Date.now(),
       } as MessageType.Text;
 
@@ -1387,7 +1314,7 @@ describe('chatSessionStore', () => {
         date: new Date().toISOString(),
         messages: [mockMessage1],
         completionSettings: defaultCompletionSettings,
-        settingsSource: 'pal' as 'pal' | 'custom',
+
         messagesLoaded: true,
       };
 
@@ -1398,7 +1325,7 @@ describe('chatSessionStore', () => {
         id: 'msg2',
         text: 'World',
         type: 'text',
-        author: {id: 'user1'},
+        author: { id: 'user1' },
         createdAt: Date.now(),
       } as MessageType.Text;
 
@@ -1426,7 +1353,7 @@ describe('chatSessionStore', () => {
         date: new Date().toISOString(),
         messages: [],
         completionSettings: defaultCompletionSettings,
-        settingsSource: 'pal' as 'pal' | 'custom',
+
         messagesLoaded: false,
       };
 
@@ -1449,7 +1376,7 @@ describe('chatSessionStore', () => {
     it('handles errors during lazy load gracefully', async () => {
       const consoleErrorSpy = jest
         .spyOn(console, 'error')
-        .mockImplementation(() => {});
+        .mockImplementation(() => { });
 
       const mockSession = {
         id: 'session1',
@@ -1457,7 +1384,7 @@ describe('chatSessionStore', () => {
         date: new Date().toISOString(),
         messages: [],
         completionSettings: defaultCompletionSettings,
-        settingsSource: 'pal' as 'pal' | 'custom',
+
         messagesLoaded: false,
       };
 
@@ -1490,7 +1417,7 @@ describe('chatSessionStore', () => {
         date: new Date().toISOString(),
         messages: [],
         completionSettings: defaultCompletionSettings,
-        settingsSource: 'pal' as 'pal' | 'custom',
+
         messagesLoaded: false,
       };
 
@@ -1500,7 +1427,7 @@ describe('chatSessionStore', () => {
         date: new Date().toISOString(),
         messages: [],
         completionSettings: defaultCompletionSettings,
-        settingsSource: 'pal' as 'pal' | 'custom',
+
         messagesLoaded: false,
       };
 
@@ -1512,7 +1439,7 @@ describe('chatSessionStore', () => {
             id: 'msg1',
             text: 'Hello from session 1',
             type: 'text',
-            author: {id: 'user1'},
+            author: { id: 'user1' },
             createdAt: Date.now(),
           }),
         },
@@ -1524,7 +1451,7 @@ describe('chatSessionStore', () => {
             id: 'msg2',
             text: 'Hello from session 2',
             type: 'text',
-            author: {id: 'user1'},
+            author: { id: 'user1' },
             createdAt: Date.now(),
           }),
         },
@@ -1534,12 +1461,12 @@ describe('chatSessionStore', () => {
         .mockResolvedValueOnce({
           session: mockSession1,
           messages: mockMessages1,
-          completionSettings: {getSettings: () => defaultCompletionSettings},
+          completionSettings: { getSettings: () => defaultCompletionSettings },
         })
         .mockResolvedValueOnce({
           session: mockSession2,
           messages: mockMessages2,
-          completionSettings: {getSettings: () => defaultCompletionSettings},
+          completionSettings: { getSettings: () => defaultCompletionSettings },
         });
 
       await chatSessionStore.setActiveSession('session1');

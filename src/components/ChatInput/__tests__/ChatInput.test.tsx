@@ -1,15 +1,15 @@
-import {fireEvent, waitFor} from '@testing-library/react-native';
+import { fireEvent, waitFor } from '@testing-library/react-native';
 import * as React from 'react';
-import {ScrollView, Alert} from 'react-native';
-import {launchCamera, launchImageLibrary} from 'react-native-image-picker';
-import {runInAction} from 'mobx';
+import { ScrollView, Alert } from 'react-native';
+import { launchCamera, launchImageLibrary } from 'react-native-image-picker';
+import { runInAction } from 'mobx';
 
-import {user} from '../../../../jest/fixtures';
-import {l10n} from '../../../utils/l10n';
-import {UserContext} from '../../../utils';
-import {ChatInput} from '../ChatInput';
-import {render} from '../../../../jest/test-utils';
-import {palStore, chatSessionStore, modelStore} from '../../../store';
+import { user } from '../../../../jest/fixtures';
+import { l10n } from '../../../utils/l10n';
+import { UserContext } from '../../../utils';
+import { ChatInput } from '../ChatInput';
+import { render } from '../../../../jest/test-utils';
+import { chatSessionStore, modelStore } from '../../../store';
 import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
 
 // Mock react-native-image-picker
@@ -30,13 +30,13 @@ describe('input', () => {
       modelStore.activeModelId = 'test-model-id';
     });
     const onSendPress = jest.fn();
-    const {getByPlaceholderText, getByLabelText} = render(
+    const { getByPlaceholderText, getByLabelText } = render(
       <UserContext.Provider value={user}>
         <ChatInput
           {...{
             onSendPress,
             sendButtonVisibilityMode: 'editing',
-            textInputProps: {value: 'text'},
+            textInputProps: { value: 'text' },
           }}
         />
       </UserContext.Provider>,
@@ -49,7 +49,7 @@ describe('input', () => {
       l10n.en.components.sendButton.accessibilityLabel,
     );
     fireEvent.press(button);
-    expect(onSendPress).toHaveBeenCalledWith({text: 'text', type: 'text'});
+    expect(onSendPress).toHaveBeenCalledWith({ text: 'text', type: 'text' });
     expect(textInput.props).toHaveProperty('value', 'text');
   });
 
@@ -60,7 +60,7 @@ describe('input', () => {
       modelStore.activeModelId = 'test-model-id';
     });
     const onSendPress = jest.fn();
-    const {getByPlaceholderText, getByLabelText} = render(
+    const { getByPlaceholderText, getByLabelText } = render(
       <UserContext.Provider value={user}>
         <ChatInput
           {...{
@@ -79,7 +79,7 @@ describe('input', () => {
       l10n.en.components.sendButton.accessibilityLabel,
     );
     fireEvent.press(button);
-    expect(onSendPress).toHaveBeenCalledWith({text: 'text', type: 'text'});
+    expect(onSendPress).toHaveBeenCalledWith({ text: 'text', type: 'text' });
     expect(textInput.props).toHaveProperty('value', '');
   });
 
@@ -99,20 +99,20 @@ describe('input', () => {
               onSendPress,
               renderScrollable,
               sendButtonVisibilityMode: 'editing',
-              textInputProps: {onChangeText, value: newValue},
+              textInputProps: { onChangeText, value: newValue },
             }}
           />
         </UserContext.Provider>,
       );
     });
-    const {getByPlaceholderText, getByLabelText, rerender} = render(
+    const { getByPlaceholderText, getByLabelText, rerender } = render(
       <UserContext.Provider value={user}>
         <ChatInput
           {...{
             onSendPress,
             renderScrollable,
             sendButtonVisibilityMode: 'editing',
-            textInputProps: {onChangeText, value},
+            textInputProps: { onChangeText, value },
           }}
         />
       </UserContext.Provider>,
@@ -125,7 +125,7 @@ describe('input', () => {
       l10n.en.components.sendButton.accessibilityLabel,
     );
     fireEvent.press(button);
-    expect(onSendPress).toHaveBeenCalledWith({text: 'text', type: 'text'});
+    expect(onSendPress).toHaveBeenCalledWith({ text: 'text', type: 'text' });
     expect(textInput.props).toHaveProperty('value', 'text');
   });
 
@@ -137,14 +137,14 @@ describe('input', () => {
     });
     const onSendPress = jest.fn();
     const onChangeText = jest.fn();
-    const {getByPlaceholderText, getByLabelText} = render(
+    const { getByPlaceholderText, getByLabelText } = render(
       <UserContext.Provider value={user}>
         <ChatInput
           {...{
             onSendPress,
             renderScrollable,
             sendButtonVisibilityMode: 'editing',
-            textInputProps: {onChangeText},
+            textInputProps: { onChangeText },
           }}
         />
       </UserContext.Provider>,
@@ -157,7 +157,7 @@ describe('input', () => {
       l10n.en.components.sendButton.accessibilityLabel,
     );
     fireEvent.press(button);
-    expect(onSendPress).toHaveBeenCalledWith({text: 'text', type: 'text'});
+    expect(onSendPress).toHaveBeenCalledWith({ text: 'text', type: 'text' });
     expect(textInput.props).toHaveProperty('value', '');
   });
 
@@ -169,14 +169,14 @@ describe('input', () => {
     });
     const onSendPress = jest.fn();
     const value = 'value';
-    const {getByPlaceholderText, getByLabelText} = render(
+    const { getByPlaceholderText, getByLabelText } = render(
       <UserContext.Provider value={user}>
         <ChatInput
           {...{
             onSendPress,
             renderScrollable,
             sendButtonVisibilityMode: 'editing',
-            textInputProps: {value},
+            textInputProps: { value },
           }}
         />
       </UserContext.Provider>,
@@ -191,7 +191,7 @@ describe('input', () => {
     );
     await waitFor(() => fireEvent.press(button)); // Wait for the press event to be processed
 
-    expect(onSendPress).toHaveBeenCalledWith({text: value, type: 'text'});
+    expect(onSendPress).toHaveBeenCalledWith({ text: value, type: 'text' });
     expect(textInput.props).toHaveProperty('value', value);
   });
 
@@ -203,14 +203,14 @@ describe('input', () => {
     });
     const onSendPress = jest.fn();
     const defaultValue = 'defaultValue';
-    const {getByPlaceholderText, getByLabelText} = render(
+    const { getByPlaceholderText, getByLabelText } = render(
       <UserContext.Provider value={user}>
         <ChatInput
           {...{
             onSendPress,
             renderScrollable,
             sendButtonVisibilityMode: 'editing',
-            textInputProps: {defaultValue},
+            textInputProps: { defaultValue },
           }}
         />
       </UserContext.Provider>,
@@ -233,7 +233,7 @@ describe('input', () => {
     expect.assertions(1);
     const onStopPress = jest.fn();
     const onSendPress = jest.fn();
-    const {getByTestId} = render(
+    const { getByTestId } = render(
       <UserContext.Provider value={user}>
         <ChatInput
           {...{
@@ -253,7 +253,7 @@ describe('input', () => {
   it('shows plus button for image upload when showImageUpload is true', () => {
     expect.assertions(1);
     const onSendPress = jest.fn();
-    const {getByLabelText} = render(
+    const { getByLabelText } = render(
       <UserContext.Provider value={user}>
         <ChatInput
           {...{
@@ -272,7 +272,7 @@ describe('input', () => {
   it('does not show plus button when showImageUpload is false', () => {
     expect.assertions(1);
     const onSendPress = jest.fn();
-    const {queryByLabelText} = render(
+    const { queryByLabelText } = render(
       <UserContext.Provider value={user}>
         <ChatInput
           {...{
@@ -291,7 +291,7 @@ describe('input', () => {
   it('renders plus button correctly when vision is enabled', () => {
     expect.assertions(2);
     const onSendPress = jest.fn();
-    const {getByLabelText} = render(
+    const { getByLabelText } = render(
       <UserContext.Provider value={user}>
         <ChatInput
           {...{
@@ -309,158 +309,12 @@ describe('input', () => {
     expect(plusButton.props.accessibilityState.disabled).toBe(false);
   });
 
-  it('shows pal selector button', () => {
-    expect.assertions(1);
-    const onSendPress = jest.fn();
-    const onPalBtnPress = jest.fn();
-    const {getByLabelText} = render(
-      <UserContext.Provider value={user}>
-        <ChatInput
-          {...{
-            onSendPress,
-            onPalBtnPress,
-            sendButtonVisibilityMode: 'editing',
-          }}
-        />
-      </UserContext.Provider>,
-    );
 
-    const palButton = getByLabelText('Select Pal');
-    fireEvent.press(palButton);
-    expect(onPalBtnPress).toHaveBeenCalledTimes(1);
-  });
-
-  it('shows video button for video pal type', async () => {
-    expect.assertions(1);
-
-    // Create a video pal and set it as active
-    const videoPal = await palStore.createPal({
-      type: 'local',
-      name: 'Test Video Pal',
-      systemPrompt: 'Test video pal',
-      originalSystemPrompt: 'Test video pal',
-      isSystemPromptChanged: false,
-      useAIPrompt: false,
-      parameters: {captureInterval: '3000'},
-      parameterSchema: [
-        {
-          key: 'captureInterval',
-          type: 'text',
-          label: 'Capture Interval',
-          required: true,
-        },
-      ],
-      source: 'local',
-      capabilities: {video: true},
-    });
-
-    // Mock the activePalId getter to return our video pal's ID
-    const originalActivePalId = Object.getOwnPropertyDescriptor(
-      chatSessionStore,
-      'activePalId',
-    );
-    Object.defineProperty(chatSessionStore, 'activePalId', {
-      get: jest.fn(() => videoPal.id),
-      configurable: true,
-    });
-
-    const onSendPress = jest.fn();
-    const onStartCamera = jest.fn();
-    const {getByText, unmount} = render(
-      <UserContext.Provider value={user}>
-        <ChatInput
-          {...{
-            onSendPress,
-            onStartCamera,
-            sendButtonVisibilityMode: 'editing',
-          }}
-        />
-      </UserContext.Provider>,
-    );
-
-    const videoButton = getByText('Start Camera');
-    fireEvent.press(videoButton);
-    expect(onStartCamera).toHaveBeenCalledTimes(1);
-
-    // Cleanup: restore original activePalId mock
-    unmount();
-    if (originalActivePalId) {
-      Object.defineProperty(
-        chatSessionStore,
-        'activePalId',
-        originalActivePalId,
-      );
-    }
-  });
-
-  it('handles prompt text change for video pal', async () => {
-    expect.assertions(1);
-
-    // Create a video pal and set it as active
-    const videoPal = await palStore.createPal({
-      type: 'local',
-      name: 'Test Video Pal',
-      systemPrompt: 'Test video pal',
-      originalSystemPrompt: 'Test video pal',
-      isSystemPromptChanged: false,
-      useAIPrompt: false,
-      parameters: {captureInterval: '3000'},
-      parameterSchema: [
-        {
-          key: 'captureInterval',
-          type: 'text',
-          label: 'Capture Interval',
-          required: true,
-        },
-      ],
-      source: 'local',
-      capabilities: {video: true},
-    });
-
-    // Mock the activePalId getter to return our video pal's ID
-    const originalActivePalId = Object.getOwnPropertyDescriptor(
-      chatSessionStore,
-      'activePalId',
-    );
-    Object.defineProperty(chatSessionStore, 'activePalId', {
-      get: jest.fn(() => videoPal.id),
-      configurable: true,
-    });
-
-    const onSendPress = jest.fn();
-    const onPromptTextChange = jest.fn();
-    const {getByPlaceholderText, unmount} = render(
-      <UserContext.Provider value={user}>
-        <ChatInput
-          {...{
-            onSendPress,
-            onPromptTextChange,
-            promptText: 'initial text',
-            sendButtonVisibilityMode: 'editing',
-          }}
-        />
-      </UserContext.Provider>,
-    );
-
-    const textInput = getByPlaceholderText(l10n.en.video.promptPlaceholder);
-    fireEvent.changeText(textInput, 'new text');
-    expect(onPromptTextChange).toHaveBeenCalledWith('new text');
-
-    // Cleanup: restore original activePalId mock
-    unmount();
-    if (originalActivePalId) {
-      Object.defineProperty(
-        chatSessionStore,
-        'activePalId',
-        originalActivePalId,
-      );
-    }
-  });
 
   it('disables plus button when vision is not enabled', () => {
     expect.assertions(1);
     const onSendPress = jest.fn();
-    const {getByLabelText} = render(
+    const { getByLabelText } = render(
       <UserContext.Provider value={user}>
         <ChatInput
           {...{
@@ -480,7 +334,7 @@ describe('input', () => {
   it('enables plus button when vision is enabled', () => {
     expect.assertions(1);
     const onSendPress = jest.fn();
-    const {getByLabelText} = render(
+    const { getByLabelText } = render(
       <UserContext.Provider value={user}>
         <ChatInput
           {...{
@@ -500,7 +354,7 @@ describe('input', () => {
   it('shows send button with always visibility mode', () => {
     expect.assertions(1);
     const onSendPress = jest.fn();
-    const {getByLabelText} = render(
+    const { getByLabelText } = render(
       <UserContext.Provider value={user}>
         <ChatInput
           {...{
@@ -524,7 +378,7 @@ describe('input', () => {
       modelStore.activeModelId = 'test-model-id';
     });
     const onSendPress = jest.fn();
-    const {getByPlaceholderText, getByLabelText} = render(
+    const { getByPlaceholderText, getByLabelText } = render(
       <UserContext.Provider value={user}>
         <ChatInput
           {...{
@@ -558,7 +412,7 @@ describe('input', () => {
 
     it('opens image upload menu when plus button is pressed', () => {
       const onSendPress = jest.fn();
-      const {getByLabelText} = render(
+      const { getByLabelText } = render(
         <UserContext.Provider value={user}>
           <ChatInput
             {...{
@@ -580,12 +434,12 @@ describe('input', () => {
 
     it('handles camera photo capture successfully', async () => {
       const mockResult = {
-        assets: [{uri: 'file://test-photo.jpg'}],
+        assets: [{ uri: 'file://test-photo.jpg' }],
       };
       (launchCamera as jest.Mock).mockResolvedValue(mockResult);
 
       const onSendPress = jest.fn();
-      const {getByLabelText} = render(
+      const { getByLabelText } = render(
         <UserContext.Provider value={user}>
           <ChatInput
             {...{
@@ -615,7 +469,7 @@ describe('input', () => {
       (launchCamera as jest.Mock).mockRejectedValue(mockError);
 
       const onSendPress = jest.fn();
-      const {getByLabelText} = render(
+      const { getByLabelText } = render(
         <UserContext.Provider value={user}>
           <ChatInput
             {...{
@@ -638,12 +492,12 @@ describe('input', () => {
 
     it('handles image library selection successfully', async () => {
       const mockResult = {
-        assets: [{uri: 'file://test-library-photo.jpg'}],
+        assets: [{ uri: 'file://test-library-photo.jpg' }],
       };
       (launchImageLibrary as jest.Mock).mockResolvedValue(mockResult);
 
       const onSendPress = jest.fn();
-      const {getByLabelText} = render(
+      const { getByLabelText } = render(
         <UserContext.Provider value={user}>
           <ChatInput
             {...{
@@ -671,7 +525,7 @@ describe('input', () => {
       });
       const onSendPress = jest.fn();
       const defaultImages = ['file://image1.jpg', 'file://image2.jpg'];
-      const {getByPlaceholderText, getByLabelText} = render(
+      const { getByPlaceholderText, getByLabelText } = render(
         <UserContext.Provider value={user}>
           <ChatInput
             {...{
@@ -739,7 +593,7 @@ describe('input', () => {
         chatSessionStore.isEditMode = true;
       });
 
-      const {getByTestId} = render(
+      const { getByTestId } = render(
         <UserContext.Provider value={user}>
           <ChatInput
             {...{
@@ -772,7 +626,7 @@ describe('input', () => {
 
       const onSendPress = jest.fn();
 
-      const {getByPlaceholderText, getByLabelText, getByText} = render(
+      const { getByPlaceholderText, getByLabelText, getByText } = render(
         <UserContext.Provider value={user}>
           <ChatInput
             {...{
@@ -815,10 +669,10 @@ describe('input', () => {
       // Ensure model is loaded
       runInAction(() => {
         modelStore.activeModelId = 'test-model';
-        modelStore.context = {id: 'test-context'} as any;
+        modelStore.context = { id: 'test-context' } as any;
       });
 
-      const {getByPlaceholderText, getByLabelText} = render(
+      const { getByPlaceholderText, getByLabelText } = render(
         <UserContext.Provider value={user}>
           <ChatInput
             {...{

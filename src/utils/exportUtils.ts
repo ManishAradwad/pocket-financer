@@ -1,15 +1,13 @@
-import {Platform, Alert} from 'react-native';
+import { Platform, Alert } from 'react-native';
 
-import {format} from 'date-fns';
+import { format } from 'date-fns';
 import Share from 'react-native-share';
 import * as RNFS from '@dr.pogodin/react-native-fs';
 
-import {chatSessionRepository} from '../repositories/ChatSessionRepository';
+import { chatSessionRepository } from '../repositories/ChatSessionRepository';
 
-import {uiStore, palStore} from '../store';
-import {ensureLegacyStoragePermission} from './androidPermission';
-import {getAbsoluteThumbnailPath, isLocalThumbnailPath} from './imageUtils';
-import type {Pal} from '../types/pal';
+import { uiStore } from '../store';
+import { ensureLegacyStoragePermission } from './androidPermission';
 /**
  * Export a single chat session to a JSON file
  * @param sessionId The ID of the session to export
@@ -23,7 +21,7 @@ export const exportChatSession = async (sessionId: string): Promise<void> => {
     }
 
     // Format the session data for export
-    const {session, messages, completionSettings} = sessionData;
+    const { session, messages, completionSettings } = sessionData;
 
     const exportData = {
       id: session.id,
@@ -40,7 +38,6 @@ export const exportChatSession = async (sessionId: string): Promise<void> => {
       completionSettings: completionSettings
         ? JSON.parse(completionSettings.settings)
         : {},
-      activePalId: session.activePalId,
     };
 
     // Create a filename with the session title and date
@@ -99,7 +96,6 @@ export const exportAllChatSessions = async (): Promise<void> => {
           completionSettings: completionSettings
             ? JSON.parse(completionSettings.settings)
             : {},
-          activePalId: sessionInfo.activePalId,
         });
       }
     }
@@ -117,117 +113,6 @@ export const exportAllChatSessions = async (): Promise<void> => {
     console.error('Error exporting all chat sessions:', error);
     throw error;
   }
-};
-
-/**
- * Export a single pal to a JSON file
- * @param palId The ID of the pal to export
- */
-export const exportPal = async (palId: string): Promise<void> => {
-  try {
-    const pal = palStore.getPals().find(p => p.id === palId);
-    if (!pal) {
-      throw new Error('Pal not found');
-    }
-
-    const exportData = await transformExportPal(pal);
-
-    const timestamp = format(new Date(), 'yyyy-MM-dd_HH-mm-ss');
-    const sanitizedName = pal.name.replace(/[^a-z0-9]/gi, '_').toLowerCase();
-    const filename = `pal_${sanitizedName}_v${exportData.version}_${timestamp}.json`;
-
-    const jsonData = JSON.stringify(exportData, null, 2);
-
-    await shareJsonData(jsonData, filename);
-  } catch (error) {
-    console.error('Error exporting pal:', error);
-    throw error;
-  }
-};
-
-/**
- * Export all pals to a JSON file
- */
-export const exportAllPals = async (): Promise<void> => {
-  try {
-    const pals = palStore.getPals();
-    const exportData = pals.map(transformExportPal);
-
-    const timestamp = format(new Date(), 'yyyy-MM-dd_HH-mm-ss');
-    const filename = `all_pals_${timestamp}.json`;
-
-    const jsonData = JSON.stringify(exportData, null, 2);
-
-    await shareJsonData(jsonData, filename);
-  } catch (error) {
-    console.error('Error exporting all pals:', error);
-    throw error;
-  }
-};
-
-const transformExportPal = async (pal: Pal) => {
-  // Create export data with version information
-  // Data Transfer Object (DTO) for exported pal data (format v2.0)
-
-  // Handle thumbnail image - convert local images to base64 for portability
-  let thumbnailData: string | undefined;
-  let thumbnailUrl: string | undefined = pal.thumbnail_url;
-
-  if (pal.thumbnail_url && isLocalThumbnailPath(pal.thumbnail_url)) {
-    try {
-      // Convert local image to base64 for export
-      const absolutePath = getAbsoluteThumbnailPath(pal.thumbnail_url);
-      const base64Content = await RNFS.readFile(absolutePath, 'base64');
-
-      // Get file extension from original file (fallback to jpg)
-      const fileExtension =
-        absolutePath.toLowerCase().split('.').pop() || 'jpg';
-
-      thumbnailData = `data:image/${fileExtension};base64,${base64Content}`;
-      thumbnailUrl = undefined; // Don't export local file paths
-    } catch (error) {
-      console.warn('Failed to read thumbnail for export:', error);
-      thumbnailUrl = undefined; // Remove invalid local path
-    }
-  }
-
-  const exportData = {
-    // Export format version for future compatibility
-    version: '2.0',
-
-    // Core pal data (modern format)
-    id: pal.id,
-    name: pal.name,
-    description: pal.description,
-    thumbnail_url: thumbnailUrl, // Remote URLs only
-    thumbnail_data: thumbnailData, // Base64 embedded images
-    systemPrompt: pal.systemPrompt,
-    originalSystemPrompt: pal.originalSystemPrompt,
-    isSystemPromptChanged: pal.isSystemPromptChanged,
-    useAIPrompt: pal.useAIPrompt,
-    defaultModel: pal.defaultModel,
-    promptGenerationModel: pal.promptGenerationModel,
-    generatingPrompt: pal.generatingPrompt,
-    color: pal.color,
-    capabilities: pal.capabilities,
-    parameters: pal.parameters,
-    parameterSchema: pal.parameterSchema,
-    source: pal.source,
-    palshub_id: pal.palshub_id,
-    creator_info: pal.creator_info,
-    categories: pal.categories,
-    tags: pal.tags,
-    rating: pal.rating,
-    review_count: pal.review_count,
-    protection_level: pal.protection_level,
-    price_cents: pal.price_cents,
-    is_owned: pal.is_owned,
-    generation_settings: pal.completionSettings,
-    created_at: pal.created_at,
-    updated_at: pal.updated_at,
-  };
-
-  return exportData;
 };
 
 /**
@@ -367,7 +252,7 @@ const shareJsonData = async (
                         Alert.alert(
                           currentL10n.components.exportUtils.shareError,
                           currentL10n.components.exportUtils.shareErrorMessage,
-                          [{text: currentL10n.components.exportUtils.ok}],
+                          [{ text: currentL10n.components.exportUtils.ok }],
                         );
                       }
                     }
@@ -375,7 +260,7 @@ const shareJsonData = async (
                 }
               },
             },
-            {text: currentL10n.components.exportUtils.ok},
+            { text: currentL10n.components.exportUtils.ok },
           ],
         );
       } catch (error) {
@@ -404,13 +289,13 @@ const shareJsonData = async (
                       currentL10n.components.exportUtils.shareError,
                       currentL10n.components.exportUtils
                         .shareContentErrorMessage,
-                      [{text: currentL10n.components.exportUtils.ok}],
+                      [{ text: currentL10n.components.exportUtils.ok }],
                     );
                   }
                 }
               },
             },
-            {text: currentL10n.components.exportUtils.cancel},
+            { text: currentL10n.components.exportUtils.cancel },
           ],
         );
       }
@@ -422,7 +307,7 @@ const shareJsonData = async (
     Alert.alert(
       currentL10n.components.exportUtils.exportError,
       currentL10n.components.exportUtils.exportErrorMessage,
-      [{text: currentL10n.components.exportUtils.ok}],
+      [{ text: currentL10n.components.exportUtils.ok }],
     );
 
     throw error;

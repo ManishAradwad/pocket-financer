@@ -1,4 +1,4 @@
-import {Q} from '@nozbe/watermelondb';
+import { Q } from '@nozbe/watermelondb';
 import * as RNFS from '@dr.pogodin/react-native-fs';
 
 import {
@@ -9,17 +9,17 @@ import {
   GlobalSetting,
 } from '../database';
 
-import {SessionMetaData} from '../store/ChatSessionStore';
+import { SessionMetaData } from '../store/ChatSessionStore';
 
-import {MessageType} from '../utils/types';
-import {CompletionParams} from '../utils/completionTypes';
+import { MessageType } from '../utils/types';
+import { CompletionParams } from '../utils/completionTypes';
 import {
   defaultCompletionParams,
   migrateCompletionSettings,
 } from '../utils/completionSettingsVersions';
 
 // Default completion settings without prompt and stop
-const defaultCompletionSettings = {...defaultCompletionParams};
+const defaultCompletionSettings = { ...defaultCompletionParams };
 delete defaultCompletionSettings.prompt;
 delete defaultCompletionSettings.stop;
 
@@ -62,9 +62,7 @@ class ChatSessionRepository {
             .create((record: any) => {
               record.title = session.title;
               record.date = session.date;
-              if (session.activePalId) {
-                record.activePalId = session.activePalId;
-              }
+              record.date = session.date;
             });
 
           // Ensure the completion settings have a version
@@ -247,7 +245,6 @@ class ChatSessionRepository {
     title: string,
     initialMessages: MessageType.Any[] = [],
     completionSettings: CompletionParams = defaultCompletionSettings,
-    activePalId?: string,
   ): Promise<ChatSession> {
     let newSession: any;
 
@@ -258,9 +255,7 @@ class ChatSessionRepository {
         .create((record: any) => {
           record.title = title;
           record.date = new Date().toISOString();
-          if (activePalId) {
-            record.activePalId = activePalId;
-          }
+          record.date = new Date().toISOString();
         });
 
       // Create completion settings with version
@@ -538,23 +533,7 @@ class ChatSessionRepository {
     });
   }
 
-  // Set active pal for a session
-  async setSessionActivePal(sessionId: string, palId?: string): Promise<void> {
-    const session = await database.collections
-      .get('chat_sessions')
-      .find(sessionId)
-      .catch(() => null);
 
-    if (!session) {
-      return;
-    }
-
-    await database.write(async () => {
-      await session.update((record: any) => {
-        record.activePalId = palId || null;
-      });
-    });
-  }
 
   // Delete a message by ID
   async deleteMessage(id: string): Promise<void> {

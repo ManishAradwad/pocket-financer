@@ -1,6 +1,6 @@
-import React, {useRef, ReactNode, useState} from 'react';
+import React, { useRef, ReactNode, useState } from 'react';
 
-import {observer} from 'mobx-react';
+import { observer } from 'mobx-react';
 
 import {
   Bubble,
@@ -8,21 +8,16 @@ import {
   ErrorSnackbar,
   ModelErrorReportSheet,
 } from '../../components';
-import {PalSheet} from '../../components/PalsSheets';
 
-import {useChatSession} from '../../hooks';
-import {usePendingMessage} from '../../hooks/useDeepLinking';
-import {Pal} from '../../types/pal';
+import { useChatSession } from '../../hooks';
+import { usePendingMessage } from '../../hooks/useDeepLinking';
 
-import {modelStore, chatSessionStore, palStore, uiStore} from '../../store';
-import {hasVideoCapability} from '../../utils/pal-capabilities';
+import { modelStore, chatSessionStore, uiStore } from '../../store';
 
-import {L10nContext} from '../../utils';
-import {MessageType} from '../../utils/types';
-import {ErrorState} from '../../utils/errors';
-import {user, assistant} from '../../utils/chat';
-
-import {VideoPalScreen} from './VideoPalScreen';
+import { L10nContext } from '../../utils';
+import { MessageType } from '../../utils/types';
+import { ErrorState } from '../../utils/errors';
+import { user, assistant } from '../../utils/chat';
 
 const renderBubble = ({
   child,
@@ -51,33 +46,15 @@ export const ChatScreen: React.FC = observer(() => {
   } | null>(null);
   const l10n = React.useContext(L10nContext);
 
-  const activePalId = chatSessionStore.activePalId;
-  const activePal = activePalId
-    ? palStore.pals.find(p => p.id === activePalId)
-    : undefined;
-  const isVideoPal = activePal && hasVideoCapability(activePal);
-
-  // State for pal sheet
-  const [isPalSheetVisible, setIsPalSheetVisible] = useState(false);
-
   // State for model error report sheet
   const [isErrorReportVisible, setIsErrorReportVisible] = useState(false);
   const [errorToReport, setErrorToReport] = useState<ErrorState | null>(null);
 
-  const {handleSendPress, handleStopPress, isMultimodalEnabled} =
+  const { handleSendPress, handleStopPress, isMultimodalEnabled } =
     useChatSession(currentMessageInfo, user, assistant);
 
   // Handle deep linking for message prefill
-  const {pendingMessage, clearPendingMessage} = usePendingMessage();
-
-  // Callback handler for opening pal sheet
-  const handleOpenPalSheet = React.useCallback((_pal: Pal) => {
-    setIsPalSheetVisible(true);
-  }, []);
-
-  const handleClosePalSheet = React.useCallback(() => {
-    setIsPalSheetVisible(false);
-  }, []);
+  const { pendingMessage, clearPendingMessage } = usePendingMessage();
 
   // Handlers for model error report
   const handleReportModelError = React.useCallback(() => {
@@ -142,10 +119,6 @@ export const ChatScreen: React.FC = observer(() => {
     }
   };
 
-  // If the active pal is a video pal, show the video pal screen
-  if (isVideoPal) {
-    return <VideoPalScreen activePal={activePal} />;
-  }
 
   // Otherwise, show the regular chat view
   return (
@@ -153,10 +126,8 @@ export const ChatScreen: React.FC = observer(() => {
       <ChatView
         renderBubble={renderBubble}
         messages={chatSessionStore.currentSessionMessages}
-        activePal={activePal}
         onSendPress={handleSendPress}
         onStopPress={handleStopPress}
-        onPalSettingsSelect={handleOpenPalSheet}
         user={user}
         isStopVisible={modelStore.inferencing}
         isThinking={isThinking}
@@ -197,13 +168,6 @@ export const ChatScreen: React.FC = observer(() => {
         onClose={handleCloseErrorReport}
         error={errorToReport}
       />
-      {activePal && (
-        <PalSheet
-          isVisible={isPalSheetVisible}
-          onClose={handleClosePalSheet}
-          pal={activePal}
-        />
-      )}
     </>
   );
 });

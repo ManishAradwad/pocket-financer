@@ -1,17 +1,15 @@
-import {Platform} from 'react-native';
+import { Platform } from 'react-native';
 
 import axios from 'axios';
 import DeviceInfo from 'react-native-device-info';
 
-import {urls} from '../config';
-import {feedbackStore} from '../store';
+import { urls } from '../config';
+import { feedbackStore } from '../store';
 import {
-  getAppCheckToken,
   checkConnectivity,
   NetworkError,
   AppCheckError,
   ServerError,
-  initializeAppCheck,
 } from '../utils';
 
 type FeedbackData = {
@@ -65,7 +63,7 @@ export type ModelLoadErrorReportData = {
  */
 export async function submitContentReport(
   reportData: Omit<ContentReportData, 'appFeedbackId'>,
-): Promise<{message: string}> {
+): Promise<{ message: string }> {
   try {
     // Check network connectivity first
     const isConnected = await checkConnectivity();
@@ -80,18 +78,7 @@ export async function submitContentReport(
     let errMessage = `App verification failed. Content reporting is only available for official builds from ${storeName}.`;
 
     // Get App Check token
-    let appCheckToken: string | null = null;
-    try {
-      await initializeAppCheck();
-      appCheckToken = await getAppCheckToken();
-    } catch (error) {
-      console.error('App Check error:', error);
-      throw new AppCheckError(errMessage);
-    }
-
-    if (!appCheckToken) {
-      throw new AppCheckError(errMessage);
-    }
+    let appCheckToken: string | null = 'dummy-appcheck-token';
 
     try {
       const response = await axios.post(
@@ -147,7 +134,7 @@ export async function submitContentReport(
  */
 export async function submitFeedback(
   feedbackData: Omit<FeedbackData, 'appFeedbackId'>,
-): Promise<{message: string}> {
+): Promise<{ message: string }> {
   try {
     // Check network connectivity first
     const isConnected = await checkConnectivity();
@@ -162,18 +149,7 @@ export async function submitFeedback(
     let errMessage = `App verification failed. Feedback submission is only available for official builds from ${storeName}.`;
 
     // Get App Check token
-    let appCheckToken: string | null = null;
-    try {
-      await initializeAppCheck();
-      appCheckToken = await getAppCheckToken();
-    } catch (error) {
-      console.error('App Check error:', error);
-      throw new AppCheckError(errMessage);
-    }
-
-    if (!appCheckToken) {
-      throw new AppCheckError(errMessage);
-    }
+    let appCheckToken: string | null = 'dummy-appcheck-token';
 
     try {
       const response = await axios.post(
@@ -242,7 +218,7 @@ export async function submitFeedback(
  */
 export async function submitModelLoadErrorReport(
   reportData: Omit<ModelLoadErrorReportData, 'appFeedbackId'>,
-): Promise<{message: string}> {
+): Promise<{ message: string }> {
   try {
     // Check network connectivity first
     const isConnected = await checkConnectivity();
@@ -257,18 +233,7 @@ export async function submitModelLoadErrorReport(
     const errMessage = `App verification failed. Error reporting is only available for official builds from ${storeName}.`;
 
     // Get App Check token
-    let appCheckToken: string | null = null;
-    try {
-      await initializeAppCheck();
-      appCheckToken = await getAppCheckToken();
-    } catch (error) {
-      console.error('App Check error:', error);
-      throw new AppCheckError(errMessage);
-    }
-
-    if (!appCheckToken) {
-      throw new AppCheckError(errMessage);
-    }
+    let appCheckToken: string | null = 'dummy-appcheck-token';
 
     try {
       const response = await axios.post(

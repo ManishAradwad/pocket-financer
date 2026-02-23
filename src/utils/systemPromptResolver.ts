@@ -1,34 +1,20 @@
-import type {Pal} from '../types/pal';
-import type {Model} from './types';
-import {generateFinalSystemPrompt} from './palshub-template-parser';
+import type { Model } from './types';
 
 export interface SystemPromptDependencies {
-  pal?: Pal | null;
   model?: Model | null;
 }
 
 /**
  * Resolves the system prompt based on priority:
- * 1. Pal's system prompt (with parameter rendering if needed)
- * 2. Fallback to model's chat template system prompt
- * 3. Empty string if neither exists
+ * 1. Model's chat template system prompt
+ * 2. Empty string if it doesn't exist
  */
 export function resolveSystemPrompt(
   dependencies: SystemPromptDependencies,
 ): string {
-  const {pal, model} = dependencies;
+  const { model } = dependencies;
 
-  // Priority 1: Pal's system prompt
-  if (pal?.systemPrompt) {
-    // Check if the pal has parameters that need rendering
-    if (pal.parameters && Object.keys(pal.parameters).length > 0) {
-      return generateFinalSystemPrompt(pal.systemPrompt, pal.parameters);
-    } else {
-      return pal.systemPrompt;
-    }
-  }
-
-  // Priority 2: Model's chat template system prompt
+  // Priority 1: Model's chat template system prompt
   if (model?.chatTemplate?.systemPrompt) {
     return model.chatTemplate.systemPrompt;
   }
@@ -43,7 +29,7 @@ export function resolveSystemPrompt(
  */
 export function resolveSystemMessages(
   dependencies: SystemPromptDependencies,
-): Array<{role: 'system'; content: string}> {
+): Array<{ role: 'system'; content: string }> {
   const systemPrompt = resolveSystemPrompt(dependencies);
 
   if (!systemPrompt.trim()) {

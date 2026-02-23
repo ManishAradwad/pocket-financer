@@ -1,4 +1,4 @@
-import {MessageType, Size, User} from '../src/utils/types';
+import { MessageType, Size, User } from '../src/utils/types';
 
 export const defaultDerivedMessageProps = {
   nextMessageInGroup: false,
@@ -70,5 +70,3 @@ export const user: User = {
   id: 'userId',
 };
 
-// Re-export pal fixtures
-export * from './fixtures/pals';

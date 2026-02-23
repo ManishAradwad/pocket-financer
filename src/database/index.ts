@@ -1,4 +1,4 @@
-import {Database} from '@nozbe/watermelondb';
+import { Database } from '@nozbe/watermelondb';
 import SQLiteAdapter from '@nozbe/watermelondb/adapters/sqlite';
 import schema from './schema';
 import migrations from './migrations';
@@ -10,7 +10,6 @@ import {
   CachedPal,
   UserLibrary,
   SyncStatus,
-  LocalPal,
 } from './models';
 
 const adapter = new SQLiteAdapter({
@@ -33,7 +32,6 @@ export const database = new Database({
     CachedPal,
     UserLibrary,
     SyncStatus,
-    LocalPal,
   ],
 });
 
@@ -45,5 +43,4 @@ export {
   CachedPal,
   UserLibrary,
   SyncStatus,
-  LocalPal,
 };

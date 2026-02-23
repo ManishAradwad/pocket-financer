@@ -1,15 +1,13 @@
 import axios from 'axios';
-import {Platform} from 'react-native';
-import {urls} from '../config';
+import { Platform } from 'react-native';
+import { urls } from '../config';
 import {
-  getAppCheckToken,
   checkConnectivity,
   NetworkError,
   AppCheckError,
   ServerError,
-  initializeAppCheck,
 } from '../utils';
-import {BenchmarkResult, DeviceInfo} from '../utils/types';
+import { BenchmarkResult, DeviceInfo } from '../utils/types';
 
 type SubmissionData = {
   deviceInfo: DeviceInfo;
@@ -22,7 +20,7 @@ type SubmissionData = {
 export async function submitBenchmark(
   deviceInfo: DeviceInfo,
   benchmarkResult: BenchmarkResult,
-): Promise<{message: string; id: number}> {
+): Promise<{ message: string; id: number }> {
   try {
     // Check network connectivity first
     const isConnected = await checkConnectivity();
@@ -37,21 +35,7 @@ export async function submitBenchmark(
     let errMessage = `App verification failed. Benchmark sharing is only available for official builds from ${storeName}.`;
 
     // Get App Check token
-    let appCheckToken: string | null = null;
-    try {
-      await initializeAppCheck();
-      appCheckToken = await getAppCheckToken();
-    } catch (error) {
-      console.error('App Check error:', error);
-
-      throw new AppCheckError(errMessage);
-    }
-
-    if (!appCheckToken) {
-      throw new AppCheckError(errMessage);
-    }
-
-    // Prepare data and submit to server
+    let appCheckToken: string | null = 'dummy-appcheck-token';    // Prepare data and submit to server
     const data: SubmissionData = {
       deviceInfo,
       benchmarkResult,
@@ -60,7 +44,7 @@ export async function submitBenchmark(
     try {
       const response = await axios.post(urls.benchmarkSubmit(), data, {
         headers: {
-          'X-Firebase-AppCheck': appCheckToken,
+          //'X-Firebase-AppCheck': appCheckToken,
           'Content-Type': 'application/json',
         },
         timeout: 10000,
