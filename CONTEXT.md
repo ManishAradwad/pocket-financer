@@ -97,6 +97,10 @@
 - **Project Path**: `C:\Users\manis\Documents\pocket-financer`
 
 ### Windows Toolchain
+> [!IMPORTANT]
+> **Windows Path Length Limit**: Building from nested directories (like `C:\Users\manis\Documents\pocket-financer`) can cause CMake/NDK build failures due to Windows path length limits.
+> ALWAYS run Android builds from the shortened junction point alias: `C:\pf`
+> Setup command used: `New-Item -ItemType Junction -Path "C:\pf" -Target "C:\Users\manis\Documents\pocket-financer"`
 | Tool | Version | Path / Notes |
 | --- | --- | --- |
 | JDK | JDK 17 | Bundled with Android Studio or installed separately |
@@ -127,9 +131,10 @@ ANDROID_HOME = C:\Users\manis\AppData\Local\Android\Sdk
 PATH += %ANDROID_HOME%\platform-tools;%ANDROID_HOME%\tools
 ```
 
-### Build Commands (from PowerShell / CMD, project root)
+### Build Commands (from PowerShell / CMD)
 ```powershell
-nvm use 22.21.0                                  # Switch to Node 22.21.0
+cd C:\pf                                          # CRITICAL: Always build from alias to avoid path length errors
+nvm use 22.21.0                                   # Switch to Node 22.21.0
 yarn install                                      # Install JS dependencies
 cd android; .\gradlew.bat assembleDebug           # Build debug APK
 npx react-native run-android                      # Build & deploy to connected emulator/device
