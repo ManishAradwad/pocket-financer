@@ -54,11 +54,11 @@
 ## 🛠️ Transformation Roadmap
 
 ### Phase 1: Cleanup & Foundation
-- **Remove** (Partially Done):
+- **Remove** (Almost Done):
   - [x] Pals system: `PalsScreen/`, `PalStore.ts`, `PalsHub/`, `PalsSheets/`, Pal-related components.
   - [x] Roleplay and Public Hub browsing features.
-  - [ ] Cloud dependencies: `@supabase/supabase-js`, `@react-native-firebase/app`, `@react-native-firebase/app-check`, `@react-native-google-signin/google-signin` (conflicts with zero-data-egress vision).
-    *Note: JS imports are mostly removed, but dependencies are still in `package.json` and `android/app/build.gradle`.*
+  - [x] Cloud dependencies: `@supabase/supabase-js`, `@react-native-firebase/app`, `@react-native-firebase/app-check`, `@react-native-google-signin/google-signin`.
+  - [x] iOS specific configurations and `ios/` directory (Project is now Android-only).
 - **Keep** (Verified):
   - [x] `llama.rn` and model management infrastructure.
   - [x] `HFStore.ts` (HuggingFace model downloads).
