@@ -54,21 +54,22 @@
 ## 🛠️ Transformation Roadmap
 
 ### Phase 1: Cleanup & Foundation
-- **Remove**:
-  - Pals system: `PalsScreen/`, `PalStore.ts`, `PalsHub/`, `PalsSheets/`, Pal-related components.
-  - Roleplay and Public Hub browsing features.
-  - Cloud dependencies: `@supabase/supabase-js`, `@react-native-firebase/app`, `@react-native-firebase/app-check`, `@react-native-google-signin/google-signin` (conflicts with zero-data-egress vision).
-- **Keep**:
-  - `llama.rn` and model management infrastructure.
-  - `HFStore.ts` (HuggingFace model downloads).
-  - `ModelStore.ts` (LLM model lifecycle management).
-  - `ChatSessionStore.ts` (basis for AI Assistant).
-  - ESLint, Prettier, commitlint configs.
-- **Decide (per-screen)**:
-  - `ChatScreen` → evolves into `AssistantScreen` (financial context-aware).
-  - `BenchmarkScreen` / `DevToolsScreen` → keep during development, remove or hide for release.
-  - `AboutScreen` → keep, rebrand for Pocket-Financer.
-  - `SettingsScreen` → keep, extend with financial preferences.
+- **Remove** (Partially Done):
+  - [x] Pals system: `PalsScreen/`, `PalStore.ts`, `PalsHub/`, `PalsSheets/`, Pal-related components.
+  - [x] Roleplay and Public Hub browsing features.
+  - [ ] Cloud dependencies: `@supabase/supabase-js`, `@react-native-firebase/app`, `@react-native-firebase/app-check`, `@react-native-google-signin/google-signin` (conflicts with zero-data-egress vision).
+    *Note: JS imports are mostly removed, but dependencies are still in `package.json` and `android/app/build.gradle`.*
+- **Keep** (Verified):
+  - [x] `llama.rn` and model management infrastructure.
+  - [x] `HFStore.ts` (HuggingFace model downloads).
+  - [x] `ModelStore.ts` (LLM model lifecycle management).
+  - [x] `ChatSessionStore.ts` (basis for AI Assistant).
+  - [x] ESLint, Prettier, commitlint configs.
+- **Decide (per-screen)** (Pending execution):
+  - [ ] `ChatScreen` → evolves into `AssistantScreen` (financial context-aware).
+  - [ ] `BenchmarkScreen` / `DevToolsScreen` → keep during development, remove or hide for release.
+  - [ ] `AboutScreen` → keep, rebrand for Pocket-Financer.
+  - [ ] `SettingsScreen` → keep, extend with financial preferences.
 
 ### Phase 2: Android SMS Layer
 - **Permissions**: `READ_SMS`, `RECEIVE_SMS`.
