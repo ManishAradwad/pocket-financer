@@ -1,4 +1,4 @@
-import React, {useState, useContext} from 'react';
+import React, { useState, useContext } from 'react';
 import {
   View,
   ScrollView,
@@ -10,11 +10,12 @@ import {
 
 import DeviceInfo from 'react-native-device-info';
 import Clipboard from '@react-native-clipboard/clipboard';
-import {Text, Button, SegmentedButtons} from 'react-native-paper';
-import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
-import {BuildInfo} from 'llama.rn';
+import { Text, Button, SegmentedButtons } from 'react-native-paper';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { BuildInfo } from 'llama.rn';
 
-import {submitFeedback} from '../../api/feedback';
+import { submitFeedback } from '../../api/feedback';
+import SmsService from '../../services/sms/SmsService';
 
 import {
   CopyIcon,
@@ -23,16 +24,16 @@ import {
   HeartIcon,
 } from '../../assets/icons';
 
-import {Sheet, TextInput} from '../../components';
-import {useTheme} from '../../hooks';
-import {createStyles} from './styles';
-import {L10nContext} from '../../utils';
+import { Sheet, TextInput } from '../../components';
+import { useTheme } from '../../hooks';
+import { createStyles } from './styles';
+import { L10nContext } from '../../utils';
 
-const GithubButtonIcon = ({color}: {color: string}) => (
+const GithubButtonIcon = ({ color }: { color: string }) => (
   <GithubIcon stroke={color} />
 );
 
-const ChevronRightButtonIcon = ({color}: {color: string}) => (
+const ChevronRightButtonIcon = ({ color }: { color: string }) => (
   <ChevronRightIcon stroke={color} />
 );
 
@@ -53,6 +54,7 @@ export const AboutScreen: React.FC = () => {
   const [generalFeedback, setGeneralFeedback] = useState('');
   const [usageFrequency, setUsageFrequency] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [smsData, setSmsData] = useState<string>('No SMS Data yet.');
 
   React.useEffect(() => {
     const version = DeviceInfo.getVersion();
@@ -62,6 +64,36 @@ export const AboutScreen: React.FC = () => {
       build: buildNumber,
     });
   }, []);
+
+  const testSmsHistory = async () => {
+    try {
+      const hasPerms = await SmsService.requestPermissions();
+      if (!hasPerms) {
+        setSmsData('Permissions denied.');
+        return;
+      }
+      const history = await SmsService.fetchSmsHistory({ limit: 5 });
+      setSmsData(JSON.stringify(history, null, 2));
+    } catch (e: any) {
+      setSmsData(`Error fetching history: ${e.message}`);
+    }
+  };
+
+  const testSmsListener = async () => {
+    try {
+      const hasPerms = await SmsService.requestPermissions();
+      if (!hasPerms) {
+        setSmsData('Permissions denied.');
+        return;
+      }
+      setSmsData('Listening for new SMS...');
+      SmsService.startListening(sms => {
+        setSmsData(prev => `NEW SMS RECEIVED:\n${JSON.stringify(sms, null, 2)}\n\n` + prev);
+      });
+    } catch (e: any) {
+      setSmsData(`Error starting listener: ${e.message}`);
+    }
+  };
 
   const copyVersionToClipboard = () => {
     const versionString = `Version ${appInfo.version} (${appInfo.build})`;
@@ -173,6 +205,19 @@ export const AboutScreen: React.FC = () => {
               onPress={() => setShowFeedback(true)}>
               {l10n.feedback.shareThoughtsButton}
             </Button>
+          </View>
+
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Dev Tools: SMS Test</Text>
+            <Button mode="contained" onPress={testSmsHistory} style={styles.actionButton}>
+              Read Last 5 SMS (History)
+            </Button>
+            <Button mode="outlined" onPress={testSmsListener} style={styles.actionButton}>
+              Start SMS Listener
+            </Button>
+            <View style={{ backgroundColor: theme.colors.surfaceVariant, padding: 8, marginTop: 8, borderRadius: 8 }}>
+              <Text>{smsData}</Text>
+            </View>
           </View>
         </View>
       </ScrollView>
