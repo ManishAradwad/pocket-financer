@@ -30,7 +30,7 @@ import {
   AppWithMigration,
 } from './src/components';
 import {
-  ChatScreen,
+  AssistantScreen,
   ModelsScreen,
   SettingsScreen,
   BenchmarkScreen,
@@ -87,7 +87,7 @@ const App = observer(() => {
                     drawerContent={props => <SidebarContent {...props} />}>
                     <Drawer.Screen
                       name={ROUTES.CHAT}
-                      component={gestureHandlerRootHOC(ChatScreen)}
+                      component={gestureHandlerRootHOC(AssistantScreen)}
                       options={{
                         headerShown: false,
                       }}

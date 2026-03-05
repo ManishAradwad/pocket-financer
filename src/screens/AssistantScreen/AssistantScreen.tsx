@@ -38,7 +38,7 @@ const renderBubble = ({
   />
 );
 
-export const ChatScreen: React.FC = observer(() => {
+export const AssistantScreen: React.FC = observer(() => {
   const currentMessageInfo = useRef<{
     createdAt: number;
     id: string;

@@ -1,4 +1,4 @@
-/** Base chat l10n containing all required properties to provide localized copy. */
+﻿/** Base chat l10n containing all required properties to provide localized copy. */
 export const l10n = {
   en: {
     common: {
@@ -498,7 +498,7 @@ export const l10n = {
         'An app that brings language models directly to your phone. Sits on the shoulders of llama.cpp and llama.rn.',
       supportProject: 'Support the Project',
       supportProjectDescription:
-        'If you enjoy using PocketPal AI, please consider supporting the project by:',
+        'If you enjoy using Pocket-Financer, please consider supporting the project by:',
       githubButton: 'Star on GitHub',
       orText: 'or',
       orBy: 'or by',
@@ -510,10 +510,10 @@ export const l10n = {
     feedback: {
       title: 'Send Feedback',
       description:
-        'Your voice matters! Tell us how PocketPal AI is helping you and what we can do to make it even more useful.',
+        'Your voice matters! Tell us how Pocket-Financer is helping you and what we can do to make it even more useful.',
       shareThoughtsButton: 'Sharing your thoughts',
       useCase: {
-        label: 'What are you using PocketPal AI for?',
+        label: 'What are you using Pocket-Financer for?',
         placeholder: 'e.g., summarization, roleplay, etc.',
       },
       featureRequests: {
@@ -525,7 +525,7 @@ export const l10n = {
         placeholder: 'Share any other thoughts you may have.',
       },
       usageFrequency: {
-        label: 'How often do you use PocketPal AI? (Optional)',
+        label: 'How often do you use Pocket-Financer? (Optional)',
         options: {
           daily: 'Daily',
           weekly: 'Weekly',
@@ -587,7 +587,7 @@ export const l10n = {
       chatEmptyPlaceholder: {
         noModelsTitle: 'No Models Available',
         noModelsDescription:
-          'Download a model to start chatting with PocketPal',
+          'Download a model to start chatting with Pocket-Financer',
         noModelsButton: 'Download Model',
         activateModelTitle: 'Activate Model To Get Started',
         activateModelDescription:
@@ -643,7 +643,7 @@ export const l10n = {
       modelErrorReportSheet: {
         title: 'Report Model Loading Issue',
         privacyNote:
-          'Help us improve PocketPal by sharing details about this error. Review below what will be shared - you can deselect any items you prefer not to include.',
+          'Help us improve Pocket-Financer by sharing details about this error. Review below what will be shared - you can deselect any items you prefer not to include.',
         errorMessage: 'Error message',
         modelInfo: 'Model Information',
         modelName: 'Name',
@@ -663,7 +663,7 @@ export const l10n = {
         success: {
           title: 'Report Submitted',
           message:
-            'Thank you for helping us improve PocketPal. Your report will help us fix this issue.',
+            'Thank you for helping us improve Pocket-Financer. Your report will help us fix this issue.',
         },
         error: {
           title: 'Report Failed',
@@ -1091,7 +1091,7 @@ export const l10n = {
     },
     camera: {
       permissionTitle: 'Camera Permission Required',
-      permissionMessage: 'PocketPal needs camera access to analyze images',
+      permissionMessage: 'Pocket-Financer needs camera access to analyze images',
       requestingPermission: 'Requesting camera permission...',
       noDevice: 'No camera device found',
       errorTitle: 'Camera Error',
@@ -1105,7 +1105,7 @@ export const l10n = {
     },
     video: {
       permissionTitle: 'Camera Permission Required',
-      permissionMessage: 'PocketPal needs camera access for video analysis',
+      permissionMessage: 'Pocket-Financer needs camera access for video analysis',
       requestingPermission: 'Requesting camera permission...',
       noDevice: 'No camera device found',
       errorTitle: 'Camera Error',
@@ -1818,7 +1818,7 @@ export const l10n = {
         '言語モデルをスマートフォンで直接利用できるアプリです、llama.cppとllama.rnをベースに開発されています',
       supportProject: 'プロジェクトを応援する',
       supportProjectDescription:
-        'PocketPal AIをご利用いただき楽しんでいただけているなら、以下の方法でプロジェクトを応援いただけると幸いです：',
+        'Pocket-Financerをご利用いただき楽しんでいただけているなら、以下の方法でプロジェクトを応援いただけると幸いです：',
       githubButton: 'GitHubでスターをつける',
       orText: 'または',
       orBy: 'または',
@@ -1830,10 +1830,10 @@ export const l10n = {
     feedback: {
       title: 'フィードバックを送信',
       description:
-        'ご意見をお聞かせください！PocketPal AIの使い心地やより便利にするためのアイデアをお寄せください',
+        'ご意見をお聞かせください！Pocket-Financerの使い心地やより便利にするためのアイデアをお寄せください',
       shareThoughtsButton: 'ご意見を共有する',
       useCase: {
-        label: 'PocketPal AIをどのように使っていますか？',
+        label: 'Pocket-Financerをどのように使っていますか？',
         placeholder: '例：要約、ロールプレイなど',
       },
       featureRequests: {
@@ -1909,7 +1909,7 @@ export const l10n = {
       chatEmptyPlaceholder: {
         noModelsTitle: '利用可能なモデルがありません',
         noModelsDescription:
-          'PocketPalとチャットを始めるにはモデルをダウンロードしてください',
+          'Pocket-Financerとチャットを始めるにはモデルをダウンロードしてください',
         noModelsButton: 'モデルをダウンロード',
         activateModelTitle: '開始するにはモデルを有効化してください',
         activateModelDescription:
@@ -1965,7 +1965,7 @@ export const l10n = {
       modelErrorReportSheet: {
         title: 'モデル読み込みエラーを報告',
         privacyNote:
-          'このエラーの詳細を共有してPocketPalの改善にご協力ください。以下の共有内容を確認し、含めたくない項目は選択解除できます。',
+          'このエラーの詳細を共有してPocket-Financerの改善にご協力ください。以下の共有内容を確認し、含めたくない項目は選択解除できます。',
         errorMessage: 'エラーメッセージ',
         modelInfo: 'モデル情報',
         modelName: '名前',
@@ -1985,7 +1985,7 @@ export const l10n = {
         success: {
           title: '報告が送信されました',
           message:
-            'PocketPalの改善にご協力いただきありがとうございます。この問題の修正に役立てます。',
+            'Pocket-Financerの改善にご協力いただきありがとうございます。この問題の修正に役立てます。',
         },
         error: {
           title: '報告に失敗しました',
@@ -2412,7 +2412,7 @@ export const l10n = {
     camera: {
       permissionTitle: 'カメラ許可が必要',
       permissionMessage:
-        'PocketPalが画像を分析するにはカメラへのアクセスが必要です',
+        'Pocket-Financerが画像を分析するにはカメラへのアクセスが必要です',
       requestingPermission: 'カメラの許可をリクエスト中...',
       noDevice: 'カメラデバイスが見つかりません',
       errorTitle: 'カメラエラー',
@@ -2427,7 +2427,7 @@ export const l10n = {
     video: {
       permissionTitle: 'カメラ許可が必要',
       permissionMessage:
-        'PocketPalが動画を分析するにはカメラへのアクセスが必要です',
+        'Pocket-Financerが動画を分析するにはカメラへのアクセスが必要です',
       requestingPermission: 'カメラの許可をリクエスト中...',
       noDevice: 'カメラデバイスが見つかりません',
       errorTitle: 'カメラエラー',
@@ -3099,7 +3099,7 @@ export const l10n = {
         '直接将语言模型完全本地部署在你手机上的APP，建立在llama.cpp和llama.rn的基础上！',
       supportProject: '支持项目',
       supportProjectDescription:
-        '如果你喜欢使用PocketPal AI，请考虑通过以下方式支持项目：',
+        '如果你喜欢使用Pocket-Financer，请考虑通过以下方式支持项目：',
       githubButton: '在GitHub上点个Star~',
       orText: '或',
       orBy: '或通过',
@@ -3110,10 +3110,10 @@ export const l10n = {
     feedback: {
       title: '发送反馈',
       description:
-        '你的声音很重要！告诉我们PocketPal AI如何帮助你以及我们可以做什么来使其更有用',
+        '你的声音很重要！告诉我们Pocket-Financer如何帮助你以及我们可以做什么来使其更有用',
       shareThoughtsButton: '分享你的想法',
       useCase: {
-        label: '你如何使用PocketPal AI？',
+        label: '你如何使用Pocket-Financer？',
         placeholder: '例如：摘要、角色扮演等',
       },
       featureRequests: {
@@ -3125,7 +3125,7 @@ export const l10n = {
         placeholder: '如果你有其他想法，请随时分享',
       },
       usageFrequency: {
-        label: '你多久使用一次PocketPal AI？（可选）',
+        label: '你多久使用一次Pocket-Financer？（可选）',
         options: {
           daily: '每天',
           weekly: '每周',
@@ -3180,9 +3180,9 @@ export const l10n = {
       },
       chatEmptyPlaceholder: {
         noModelsTitle: '没有可用的模型',
-        noModelsDescription: '需要下载一个模型，才能与PocketPal开始聊天',
+        noModelsDescription: '需要下载一个模型，才能与Pocket-Financer开始聊天',
         noModelsButton: '下载模型',
-        activateModelTitle: '在你和PocketPal开始聊天前，请先激活模型~',
+        activateModelTitle: '在你和Pocket-Financer开始聊天前，请先激活模型~',
         activateModelDescription: '选择并加载一个模型以开始聊天',
         activateModelButton: '选择模型',
         loading: '加载中...',
@@ -3232,7 +3232,7 @@ export const l10n = {
       modelErrorReportSheet: {
         title: '报告模型加载问题',
         privacyNote:
-          '通过分享此错误的详细信息帮助我们改进PocketPal。请查看下方将要分享的内容 - 您可以取消选择不想包含的项目。',
+          '通过分享此错误的详细信息帮助我们改进Pocket-Financer。请查看下方将要分享的内容 - 您可以取消选择不想包含的项目。',
         errorMessage: '错误消息',
         modelInfo: '模型信息',
         modelName: '名称',
@@ -3251,7 +3251,7 @@ export const l10n = {
         success: {
           title: '报告已提交',
           message:
-            '感谢您帮助我们改进PocketPal。您的报告将帮助我们修复此问题。',
+            '感谢您帮助我们改进Pocket-Financer。您的报告将帮助我们修复此问题。',
         },
         error: {
           title: '报告失败',
@@ -3668,7 +3668,7 @@ export const l10n = {
     },
     camera: {
       permissionTitle: '需要摄像头权限',
-      permissionMessage: 'PocketPal需要访问摄像头来分析图像',
+      permissionMessage: 'Pocket-Financer需要访问摄像头来分析图像',
       requestingPermission: '请求摄像头权限...',
       noDevice: '未找到摄像头设备',
       errorTitle: '摄像头错误',
@@ -3682,7 +3682,7 @@ export const l10n = {
     },
     video: {
       permissionTitle: '需要摄像头权限',
-      permissionMessage: 'PocketPal需要访问摄像头来分析视频',
+      permissionMessage: 'Pocket-Financer需要访问摄像头来分析视频',
       requestingPermission: '请求摄像头权限...',
       noDevice: '未找到摄像头设备',
       errorTitle: '摄像头错误',

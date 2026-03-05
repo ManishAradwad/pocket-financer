@@ -1,4 +1,4 @@
-import React, {useCallback, useState, useEffect} from 'react';
+import React, { useCallback, useState, useEffect } from 'react';
 import {
   Alert,
   Linking,
@@ -9,9 +9,9 @@ import {
   Platform,
 } from 'react-native';
 
-import {observer} from 'mobx-react-lite';
-import {useNavigation} from '@react-navigation/native';
-import {DrawerNavigationProp} from '@react-navigation/drawer';
+import { observer } from 'mobx-react-lite';
+import { useNavigation } from '@react-navigation/native';
+import { DrawerNavigationProp } from '@react-navigation/drawer';
 import {
   Card,
   ProgressBar,
@@ -25,13 +25,13 @@ import {
   HelperText,
 } from 'react-native-paper';
 
-import {ProjectionModelSelector} from '../../../components';
+import { ProjectionModelSelector } from '../../../components';
 
-import {useTheme, useMemoryCheck, useStorageCheck} from '../../../hooks';
+import { useTheme, useMemoryCheck, useStorageCheck } from '../../../hooks';
 
-import {createStyles} from './styles';
+import { createStyles } from './styles';
 
-import {uiStore, modelStore} from '../../../store';
+import { uiStore, modelStore } from '../../../store';
 
 import {
   Model,
@@ -59,7 +59,7 @@ import {
   ChevronSelectorExpandedVerticalIcon,
 } from '../../../assets/icons';
 
-type ChatScreenNavigationProp = DrawerNavigationProp<RootDrawerParamList>;
+type AssistantScreenNavigationProp = DrawerNavigationProp<RootDrawerParamList>;
 
 interface ModelCardProps {
   model: Model;
@@ -77,20 +77,20 @@ if (
 }
 
 export const ModelCard: React.FC<ModelCardProps> = observer(
-  ({model, activeModelId, onOpenSettings}) => {
+  ({ model, activeModelId, onOpenSettings }) => {
     const l10n = React.useContext(L10nContext);
     const theme = useTheme();
     const styles = createStyles(theme);
 
-    const navigation = useNavigation<ChatScreenNavigationProp>();
+    const navigation = useNavigation<AssistantScreenNavigationProp>();
 
     const [snackbarVisible, setSnackbarVisible] = useState(false); // Snackbar visibility
     const [integrityError, setIntegrityError] = useState<string | null>(null);
     const [isExpanded, setIsExpanded] = useState(false);
 
-    const {memoryWarning, shortMemoryWarning, multimodalWarning} =
+    const { memoryWarning, shortMemoryWarning, multimodalWarning } =
       useMemoryCheck(model.size, model.supportsMultimodal);
-    const {isOk: storageOk, message: storageNOkMessage} = useStorageCheck(
+    const { isOk: storageOk, message: storageNOkMessage } = useStorageCheck(
       model,
       {
         enablePeriodicCheck: true,
@@ -114,7 +114,7 @@ export const ModelCard: React.FC<ModelCardProps> = observer(
     // Check integrity when model is downloaded
     useEffect(() => {
       if (isDownloaded) {
-        checkModelFileIntegrity(model).then(({errorMessage}) => {
+        checkModelFileIntegrity(model).then(({ errorMessage }) => {
           setIntegrityError(errorMessage);
         });
       } else {
@@ -149,7 +149,7 @@ export const ModelCard: React.FC<ModelCardProps> = observer(
             }
 
             Alert.alert(l10n.models.multimodal.cannotDeleteTitle, message, [
-              {text: l10n.common.ok, style: 'default'},
+              { text: l10n.common.ok, style: 'default' },
             ]);
             return;
           }
@@ -159,7 +159,7 @@ export const ModelCard: React.FC<ModelCardProps> = observer(
             l10n.models.multimodal.deleteProjectionTitle,
             l10n.models.multimodal.deleteProjectionMessage,
             [
-              {text: l10n.common.cancel, style: 'cancel'},
+              { text: l10n.common.cancel, style: 'cancel' },
               {
                 text: l10n.common.delete,
                 style: 'destructive',
@@ -173,7 +173,7 @@ export const ModelCard: React.FC<ModelCardProps> = observer(
                       error instanceof Error
                         ? error.message
                         : 'Unknown error occurred',
-                      [{text: l10n.common.ok, style: 'default'}],
+                      [{ text: l10n.common.ok, style: 'default' }],
                     );
                   }
                 },
@@ -186,7 +186,7 @@ export const ModelCard: React.FC<ModelCardProps> = observer(
             l10n.models.modelCard.alerts.deleteTitle,
             l10n.models.modelCard.alerts.deleteMessage,
             [
-              {text: l10n.common.cancel, style: 'cancel'},
+              { text: l10n.common.cancel, style: 'cancel' },
               {
                 text: l10n.common.delete,
                 onPress: async () => {
@@ -213,7 +213,7 @@ export const ModelCard: React.FC<ModelCardProps> = observer(
         l10n.models.modelCard.alerts.removeTitle,
         l10n.models.modelCard.alerts.removeMessage,
         [
-          {text: l10n.common.cancel, style: 'cancel'},
+          { text: l10n.common.cancel, style: 'cancel' },
           {
             text: l10n.models.modelCard.buttons.remove,
             style: 'destructive',
@@ -348,13 +348,13 @@ export const ModelCard: React.FC<ModelCardProps> = observer(
                 styles.primaryActionButton,
                 storageOk
                   ? {
-                      backgroundColor: theme.colors.btnDownloadBg,
-                      borderColor: theme.colors.btnDownloadBorder,
-                    }
+                    backgroundColor: theme.colors.btnDownloadBg,
+                    borderColor: theme.colors.btnDownloadBorder,
+                  }
                   : {
-                      backgroundColor: theme.colors.surfaceDim,
-                      borderColor: theme.colors.outline,
-                    },
+                    backgroundColor: theme.colors.surfaceDim,
+                    borderColor: theme.colors.outline,
+                  },
               ]}
               textColor={theme.colors.btnDownloadText}>
               {l10n.models.modelCard.buttons.download}
@@ -676,7 +676,7 @@ export const ModelCard: React.FC<ModelCardProps> = observer(
                         .map(
                           skill =>
                             l10n.models.modelCapabilities[
-                              skill.labelKey as keyof typeof l10n.models.modelCapabilities
+                            skill.labelKey as keyof typeof l10n.models.modelCapabilities
                             ] || skill.labelKey,
                         )
                         .join(', ')}{' '}

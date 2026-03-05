@@ -1,4 +1,4 @@
-import { Platform, Alert } from 'react-native';
+﻿import { Platform, Alert } from 'react-native';
 
 import { format } from 'date-fns';
 import Share from 'react-native-share';
@@ -223,7 +223,7 @@ const shareJsonData = async (
                 try {
                   const options = {
                     title: `Share ${filename}`,
-                    message: 'PocketPal AI Chat Export',
+                    message: 'Pocket-Financer Chat Export',
                     url: `file://${savePath}`,
                     type: 'application/json',
                     failOnCancel: false,

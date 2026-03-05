@@ -1,15 +1,16 @@
 module.exports = {
-  extends: ['@commitlint/config-conventional'],
-  rules: {
-    'type-enum': [
-      2,
-      'always',
-      [
-        'feat', // New feature
-        'fix', // Bug fix
-        'docs', // Documentation changes
-        'chore', // Refactoring, tooling, miscellaneous, etc.
-      ],
-    ],
-  },
+    rules: {
+        'type-enum': [
+            2,
+            'always',
+            [
+                'feat',
+                'fix',
+                'docs',
+                'chore',
+            ],
+        ],
+        'type-empty': [2, 'never'], // Prevents empty type like ": message"
+        'subject-empty': [2, 'never'], // Prevents empty subject like "feat:"
+    },
 };

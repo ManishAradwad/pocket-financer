@@ -65,11 +65,11 @@
   - [x] `ModelStore.ts` (LLM model lifecycle management).
   - [x] `ChatSessionStore.ts` (basis for AI Assistant).
   - [x] ESLint, Prettier, commitlint configs.
-- **Decide (per-screen)** (Pending execution):
-  - [ ] `ChatScreen` → evolves into `AssistantScreen` (financial context-aware).
-  - [ ] `BenchmarkScreen` / `DevToolsScreen` → keep during development, remove or hide for release.
-  - [ ] `AboutScreen` → keep, rebrand for Pocket-Financer.
-  - [ ] `SettingsScreen` → keep, extend with financial preferences.
+- **Decide (per-screen)** (Completed):
+  - [x] `ChatScreen` → evolved into `AssistantScreen` (financial context-aware).
+  - [x] `BenchmarkScreen` / `DevToolsScreen` → keep during development, remove or hide for release.
+  - [x] `AboutScreen` → keep, rebranded for Pocket-Financer.
+  - [x] `SettingsScreen` → keep, extend with financial preferences.
 
 ### Phase 2: Android SMS Layer (Completed)
 - [x] **Permissions**: `READ_SMS`, `RECEIVE_SMS` configured in AndroidManifest.xml along with a background `SmsReceiver`.
