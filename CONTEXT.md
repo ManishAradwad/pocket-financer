@@ -59,12 +59,13 @@
   - [x] Roleplay and Public Hub browsing features.
   - [x] Cloud dependencies: `@supabase/supabase-js`, `@react-native-firebase/app`, `@react-native-firebase/app-check`, `@react-native-google-signin/google-signin`.
   - [x] iOS specific configurations and `ios/` directory (Project is now Android-only).
+  - [x] iOS specific GitHub Action CI/CD workflows and macOS runners.
 - **Keep** (Verified):
   - [x] `llama.rn` and model management infrastructure.
   - [x] `HFStore.ts` (HuggingFace model downloads).
   - [x] `ModelStore.ts` (LLM model lifecycle management).
   - [x] `ChatSessionStore.ts` (basis for AI Assistant).
-  - [x] ESLint, Prettier, commitlint configs.
+  - [x] ESLint, Prettier. (Note: Strict Conventional commitlint rules were relaxed to simple prefixes).
 - **Decide (per-screen)** (Completed):
   - [x] `ChatScreen` → evolved into `AssistantScreen` (financial context-aware).
   - [x] `BenchmarkScreen` / `DevToolsScreen` → keep during development, remove or hide for release.
@@ -150,5 +151,6 @@ npx react-native start                            # Start Metro bundler
 
 ## 📝 Conventions
 - **Code Style**: ESLint + Prettier (existing config).
-- **Commits**: Conventional Commits (e.g., `feat: add sms listener`, `chore: remove pals`).
+- **Commits**: Relaxed standard. Must start with `feat`, `fix`, `docs`, or `chore` but has no character limits or strict formatting rules (e.g., `feat: added stuff` or `fix: broken sms parser!`).
+- **CI/CD**: GitHub Actions optimized purely for Android. No macOS runners.
 - **Context Updates**: Update this file when major architectural changes occur.
