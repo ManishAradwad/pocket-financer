@@ -132,6 +132,7 @@ const App = observer(() => {
                         name={ROUTES.DEV_TOOLS}
                         component={gestureHandlerRootHOC(DevToolsScreen)}
                         options={{
+                          headerShown: false,
                           headerStyle: styles.headerWithoutDivider,
                           title: 'Dev Tools',
                         }}

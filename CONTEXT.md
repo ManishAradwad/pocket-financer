@@ -44,7 +44,7 @@
 - `src/components/`: Reusable UI components (Chat, Markdown, Settings, etc.).
 
 ### Planned (to be created)
-- `src/services/sms/`: SMS listening and retrieval logic.
+- `src/services/sms/`: SMS listening and retrieval logic (Completed in Phase 2).
 - `src/services/pipeline/`: The "Multi-Agent" workflow logic (Orchestrator).
 - `src/store/TransactionStore.ts`: MobX store for parsed transactions.
 - `src/screens/DashboardScreen/`: Main home summary.
@@ -71,9 +71,10 @@
   - [ ] `AboutScreen` → keep, rebrand for Pocket-Financer.
   - [ ] `SettingsScreen` → keep, extend with financial preferences.
 
-### Phase 2: Android SMS Layer
-- **Permissions**: `READ_SMS`, `RECEIVE_SMS`.
-- **Native Module**: Bridge to pass SMS to RN.
+### Phase 2: Android SMS Layer (Completed)
+- [x] **Permissions**: `READ_SMS`, `RECEIVE_SMS` configured in AndroidManifest.xml along with a background `SmsReceiver`.
+- [x] **Native Module**: Created `com.pocketpal.sms` Turbo Module to pass SMS history and `onSmsReceived` events to React Native.
+- [x] **Service Layer**: Created `src/services/sms/SmsService.ts` as a singleton wrapper to safely check permissions and fetch history.
 
 ### Phase 3: Intelligence Pipeline (Multi-Agent)
 - **Classifier Agent**: Prompt to decide `Financial` vs `Non-Financial`.
