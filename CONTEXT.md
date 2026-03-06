@@ -53,20 +53,18 @@
 
 ## 🛠️ Transformation Roadmap
 
-### Phase 1: Cleanup & Foundation
-- **Remove** (Almost Done):
+### Phase 1: Cleanup & Foundation (Completed)
+- **Remove**:
   - [x] Pals system: `PalsScreen/`, `PalStore.ts`, `PalsHub/`, `PalsSheets/`, Pal-related components.
   - [x] Roleplay and Public Hub browsing features.
   - [x] Cloud dependencies: `@supabase/supabase-js`, `@react-native-firebase/app`, `@react-native-firebase/app-check`, `@react-native-google-signin/google-signin`.
   - [x] iOS specific configurations and `ios/` directory (Project is now Android-only).
-  - [x] iOS specific GitHub Action CI/CD workflows and macOS runners.
-- **Keep** (Verified):
+- **Keep**:
   - [x] `llama.rn` and model management infrastructure.
   - [x] `HFStore.ts` (HuggingFace model downloads).
   - [x] `ModelStore.ts` (LLM model lifecycle management).
   - [x] `ChatSessionStore.ts` (basis for AI Assistant).
-  - [x] ESLint, Prettier. (Note: Strict Conventional commitlint rules were relaxed to simple prefixes).
-- **Decide (per-screen)** (Completed):
+- **Decide** (Completed):
   - [x] `ChatScreen` → evolved into `AssistantScreen` (financial context-aware).
   - [x] `BenchmarkScreen` / `DevToolsScreen` → keep during development, remove or hide for release.
   - [x] `AboutScreen` → keep, rebranded for Pocket-Financer.
