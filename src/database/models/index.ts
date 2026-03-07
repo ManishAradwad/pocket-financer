@@ -5,6 +5,8 @@ import GlobalSetting from './GlobalSetting';
 import CachedPal from './CachedPal';
 import UserLibrary from './UserLibrary';
 import SyncStatus from './SyncStatus';
+import Account from './Account';
+import Transaction from './Transaction';
 
 export {
   ChatSession,
@@ -14,4 +16,6 @@ export {
   CachedPal,
   UserLibrary,
   SyncStatus,
+  Account,
+  Transaction,
 };

@@ -10,6 +10,8 @@ import {
   CachedPal,
   UserLibrary,
   SyncStatus,
+  Account,
+  Transaction,
 } from './models';
 
 const adapter = new SQLiteAdapter({
@@ -32,6 +34,8 @@ export const database = new Database({
     CachedPal,
     UserLibrary,
     SyncStatus,
+    Account,
+    Transaction,
   ],
 });
 
@@ -43,4 +47,6 @@ export {
   CachedPal,
   UserLibrary,
   SyncStatus,
+  Account,
+  Transaction,
 };

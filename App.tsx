@@ -1,5 +1,9 @@
 import * as React from 'react';
-import { Dimensions, StyleSheet } from 'react-native';
+import { Dimensions, StyleSheet, View } from 'react-native';
+import { Text } from 'react-native-paper';
+import { CapabilityDetectionService } from './src/services/pipeline/CapabilityDetectionService';
+import SmsService from './src/services/sms/SmsService';
+import { PipelineService } from './src/services/pipeline/PipelineService';
 
 import { observer } from 'mobx-react';
 import { NavigationContainer } from '@react-navigation/native';
@@ -57,11 +61,44 @@ const App = observer(() => {
   const theme = useTheme();
   const styles = createStyles(theme);
   const currentL10n = l10n[uiStore.language];
+  const [isSupported, setIsSupported] = React.useState<boolean | null>(null);
 
   // Initialize locale with the current language
   React.useEffect(() => {
     initLocale(uiStore.language);
+
+    // Check device capabilities
+    CapabilityDetectionService.checkAndSelectModel().then((supported) => {
+      setIsSupported(supported);
+      if (supported) {
+        // Start processing background SMS if permissions are granted
+        SmsService.hasPermissions().then(hasPerms => {
+          if (hasPerms) {
+            SmsService.startListening((sms) => {
+              PipelineService.processSms(sms.body);
+            });
+          }
+        });
+      }
+    });
   }, []);
+
+  if (isSupported === false) {
+    return (
+      <View style={[styles.root, { justifyContent: 'center', alignItems: 'center', padding: 20 }]}>
+        <Text variant="headlineMedium" style={{ color: theme.colors.error, textAlign: 'center', marginBottom: 10 }}>
+          Unsupported Device
+        </Text>
+        <Text variant="bodyLarge" style={{ textAlign: 'center' }}>
+          Pocket-Financer requires at least 2GB of RAM to process your SMS securely on-device without any data leaving your phone. Your device currently does not meet this requirement.
+        </Text>
+      </View>
+    );
+  }
+
+  if (isSupported === null) {
+    return null; // or a loading spinner
+  }
 
   return (
     <GestureHandlerRootView style={styles.root}>
