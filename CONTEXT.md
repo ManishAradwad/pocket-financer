@@ -75,13 +75,13 @@
 - [x] **Native Module**: Created `com.pocketpal.sms` Turbo Module to pass SMS history and `onSmsReceived` events to React Native.
 - [x] **Service Layer**: Created `src/services/sms/SmsService.ts` as a singleton wrapper to safely check permissions and fetch history.
 
-### Phase 3: Intelligence Pipeline (Multi-Agent)
-- **Classifier Agent**: Prompt to decide `Financial` vs `Non-Financial`.
-- **Extractor Agent**: JSON extraction prompt.
-- **Orchestrator**: TypeScript logic to chain these steps.
-- **Database**: Extend existing WatermelonDB schema with new `Transaction` and `Account` models (adding to the existing `src/database/` setup).
-- **State**: New `TransactionStore` (MobX) for managing parsed transaction data.
-- **Device Capability**: Detect device specs and auto-select the lightest viable LLM. Show a clear warning/blocker if the device cannot support any suitable model.
+### Phase 3: Intelligence Pipeline (Multi-Agent) (Completed)
+- [x] **Classifier Agent**: Prompt to decide `Financial` vs `Non-Financial`.
+- [x] **Extractor Agent**: JSON extraction prompt.
+- [x] **Orchestrator**: TypeScript logic to chain these steps.
+- [x] **Database**: Extend existing WatermelonDB schema with new `Transaction` and `Account` models (adding to the existing `src/database/` setup).
+- [x] **State**: New `TransactionStore` (MobX) for managing parsed transaction data.
+- [x] **Device Capability**: Detect device specs and auto-select the lightest viable LLM. Show a clear warning/blocker if the device cannot support any suitable model.
 
 ### Phase 4: UI Implementation
 - **Dashboard**: Implement the "Good Evening" card styles and health score.
