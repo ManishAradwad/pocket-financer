@@ -20,11 +20,10 @@ class SmsReceiver : BroadcastReceiver() {
 
                 Log.d("SmsReceiver", "Received SMS from: $address")
 
-                // Ensure the context is a ReactApplication
-                val reactApplication = context.applicationContext as? ReactApplication
-                val reactContext = reactApplication?.reactNativeHost?.reactInstanceManager?.currentReactContext
+                // Bridgeless-compatible way to get the ReactContext
+                val reactContext = SmsModule.reactContext
 
-                if (reactContext != null && reactContext.hasActiveCatalystInstance()) {
+                if (reactContext != null) {
                     val params = Arguments.createMap()
                     params.putString("address", address)
                     params.putString("body", body)

@@ -32,6 +32,8 @@ export class PipelineService {
                 return;
             }
 
+            console.log('PipelineService: Extracted transaction payload:', JSON.stringify(extractedData, null, 2));
+
             console.log('PipelineService: Saving transaction to DB...');
 
             // Save account if we have one

@@ -12,6 +12,14 @@ import com.pocketpal.specs.NativeSmsModuleSpec
 @ReactModule(name = NativeSmsModuleSpec.NAME)
 class SmsModule(reactContext: ReactApplicationContext) : NativeSmsModuleSpec(reactContext) {
 
+    companion object {
+        var reactContext: ReactApplicationContext? = null
+    }
+
+    init {
+        SmsModule.reactContext = reactContext
+    }
+
     override fun getName(): String = NativeSmsModuleSpec.NAME
 
     override fun hasPermissions(promise: Promise) {
