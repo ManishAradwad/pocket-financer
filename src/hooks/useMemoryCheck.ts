@@ -1,17 +1,20 @@
-import React, {useEffect, useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import DeviceInfo from 'react-native-device-info';
-import {L10nContext} from '../utils';
-import {isHighEndDevice} from '../utils/deviceCapabilities';
+import { L10nContext } from '../utils';
+import { isHighEndDevice } from '../utils/deviceCapabilities';
 
 function memoryRequirementEstimate(modelSize: number, isMultimodal = false) {
   // Model parameters derived by fitting a linear regression to benchmark data
   // from: https://huggingface.co/spaces/a-ghorbani/ai-phone-leaderboard
-  const baseRequirement = 0.43 + (0.92 * modelSize) / 1000 / 1000 / 1000;
+  const modelSizeGB = modelSize / 1000 / 1000 / 1000;
+  const baseRequirement = 0.43 + (0.92 * modelSizeGB);
 
   // Add overhead for multimodal models
   if (isMultimodal) {
-    // Additional memory for mmproj model, image processing, and larger context
-    return baseRequirement + 1.8; // ~1.8GB additional overhead. THis is rough estimate and needs to be revisited.
+    // Dynamically scale multimodal overhead based on the base model size
+    // Roughly 50% of the model size, with a minimum of 0.4GB and max 1.8GB
+    const multimodalOverhead = Math.min(1.8, Math.max(0.4, modelSizeGB * 0.5));
+    return baseRequirement + multimodalOverhead;
   }
 
   return baseRequirement;
@@ -52,8 +55,11 @@ export const useMemoryCheck = (modelSize: number, isMultimodal = false) => {
 
         // Additional check for multimodal capability
         if (isMultimodal) {
+          const modelSizeGB = modelSize / 1000 / 1000 / 1000;
+          const isSmallModel = modelSizeGB < 2.0;
+
           const isCapable = await isHighEndDevice();
-          if (!isCapable) {
+          if (!isCapable && !isSmallModel) {
             setMultimodalWarning(l10n.memory.multimodalWarning);
           }
         }
@@ -69,5 +75,5 @@ export const useMemoryCheck = (modelSize: number, isMultimodal = false) => {
     checkMemory();
   }, [modelSize, isMultimodal, l10n]);
 
-  return {memoryWarning, shortMemoryWarning, multimodalWarning};
+  return { memoryWarning, shortMemoryWarning, multimodalWarning };
 };
