@@ -16,6 +16,7 @@ import { BuildInfo } from 'llama.rn';
 
 import { submitFeedback } from '../../api/feedback';
 import SmsService from '../../services/sms/SmsService';
+import { PipelineService } from '../../services/pipeline/PipelineService';
 
 import {
   CopyIcon,
@@ -89,6 +90,10 @@ export const AboutScreen: React.FC = () => {
       setSmsData('Listening for new SMS...');
       SmsService.startListening(sms => {
         setSmsData(prev => `NEW SMS RECEIVED:\n${JSON.stringify(sms, null, 2)}\n\n` + prev);
+
+        if (sms.body) {
+          PipelineService.processSms(sms.body);
+        }
       });
     } catch (e: any) {
       setSmsData(`Error starting listener: ${e.message}`);
