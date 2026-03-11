@@ -3,13 +3,41 @@ import { transactionStore } from '../../store/TransactionStore';
 import { CLASSIFIER_PROMPT, EXTRACTOR_PROMPT } from './Prompts';
 
 export class PipelineService {
+    private static isProcessingSms = false;
+    private static smsQueue: string[] = [];
+
     /**
      * Processes an incoming raw SMS message.
-     * Runs the Classifier. If YES, runs the Extractor.
-     * Finally, saves the transaction to WatermelonDB.
+     * Enqueues the message and processes them sequentially to avoid concurrent LLM crashes.
      * @param smsText The raw SMS content
      */
     static async processSms(smsText: string): Promise<void> {
+        this.smsQueue.push(smsText);
+        this.processQueue();
+    }
+
+    private static async processQueue(): Promise<void> {
+        if (this.isProcessingSms || this.smsQueue.length === 0) {
+            return;
+        }
+
+        this.isProcessingSms = true;
+
+        while (this.smsQueue.length > 0) {
+            const currentSms = this.smsQueue.shift();
+            if (!currentSms) continue;
+
+            try {
+                await this.processSingleSms(currentSms);
+            } catch (e) {
+                console.error('PipelineService: Error in sequential SMS processing:', e);
+            }
+        }
+
+        this.isProcessingSms = false;
+    }
+
+    private static async processSingleSms(smsText: string): Promise<void> {
         if (!modelStore.context) {
             console.warn('PipelineService: LLM Context not initialized. Cannot process SMS.');
             return;

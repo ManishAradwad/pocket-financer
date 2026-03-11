@@ -53,23 +53,29 @@ class SmsService {
         return await NativeSmsModule.getSmsByFilter(filter);
     }
 
+    private currentSubscription: any = null;
+
     startListening(onSmsReceived: (sms: SmsMessage) => void): () => void {
         if (Platform.OS !== 'android' || !this.eventEmitter) {
             console.warn('SMS listening is only supported on Android with NativeSmsModule');
             return () => { };
         }
 
-        if (this.isListening) {
-            console.warn('SmsService is already listening');
+        if (this.isListening && this.currentSubscription) {
+            console.warn('SmsService is already listening, replacing existing listener.');
+            this.currentSubscription.remove();
         }
 
         this.isListening = true;
-        const subscription = this.eventEmitter.addListener('onSmsReceived', (sms: SmsMessage) => {
+        this.currentSubscription = this.eventEmitter.addListener('onSmsReceived', (sms: SmsMessage) => {
             onSmsReceived(sms);
         });
 
         return () => {
-            subscription.remove();
+            if (this.currentSubscription) {
+                this.currentSubscription.remove();
+                this.currentSubscription = null;
+            }
             this.isListening = false;
         };
     }
