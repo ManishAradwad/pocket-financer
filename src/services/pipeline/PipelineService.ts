@@ -74,6 +74,8 @@ export class PipelineService {
                 n_predict: 10,
             });
 
+            console.log('PipelineService: LLM Classification Output:', result.text);
+
             const responseText = result.text.trim().toUpperCase();
             return responseText.includes('YES');
         } catch (e) {
@@ -94,6 +96,8 @@ export class PipelineService {
                 },
                 n_predict: 200,
             });
+
+            console.log('PipelineService: LLM Extraction Output:', result.text);
 
             const jsonMatch = result.text.match(/\{[\s\S]*\}/);
             if (jsonMatch) {
