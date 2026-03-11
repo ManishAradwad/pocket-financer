@@ -97,8 +97,6 @@ export class PipelineService {
                 n_predict: 200,
             });
 
-            console.log('PipelineService: LLM Extraction Output:', result.text);
-
             const jsonMatch = result.text.match(/\{[\s\S]*\}/);
             if (jsonMatch) {
                 try {
