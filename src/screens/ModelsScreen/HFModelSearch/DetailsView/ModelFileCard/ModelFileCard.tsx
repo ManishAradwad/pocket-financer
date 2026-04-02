@@ -23,6 +23,7 @@ import {
   getVisionModelSizeBreakdown,
   isVisionRepo,
 } from '../../../../../utils';
+import {t} from '../../../../../locales';
 import {isLegacyQuantization} from '../../../../../utils/modelSettings';
 import {
   HuggingFaceModel,
@@ -91,9 +92,27 @@ export const ModelFileCard: FC<ModelFileCardProps> = observer(
       ),
     ).get();
 
+    // Resolve projection model for memory check
+    // Resolve projection model for memory check
+    const projectionModelForCheck = useMemo(
+      () => {
+        if (
+          convertedModel.supportsMultimodal &&
+          convertedModel.defaultProjectionModel
+        ) {
+          return modelStore.models.find(
+            m => m.id === convertedModel.defaultProjectionModel,
+          );
+        }
+        return undefined;
+      },
+      // eslint-disable-next-line react-hooks/exhaustive-deps -- MobX observable tracked by observer()
+      [convertedModel, modelStore.models],
+    );
+
     const {shortMemoryWarning, multimodalWarning} = useMemoryCheck(
-      convertedModel.size,
-      convertedModel.supportsMultimodal,
+      convertedModel,
+      projectionModelForCheck,
     );
 
     const warnings = [
@@ -294,10 +313,9 @@ export const ModelFileCard: FC<ModelFileCardProps> = observer(
                       />
                       <Text style={styles.warningText}>
                         {warnings.length > 1
-                          ? l10n.models.modelFile.warnings.multiple.replace(
-                              '{count}',
-                              warnings.length.toString(),
-                            )
+                          ? t(l10n.models.modelFile.warnings.multiple, {
+                              count: warnings.length.toString(),
+                            })
                           : warnings[0].shortMessage}
                       </Text>
                     </View>
@@ -344,10 +362,9 @@ export const ModelFileCard: FC<ModelFileCardProps> = observer(
               {/* Download Speed */}
               {isDownloading && downloadSpeed && (
                 <Text variant="bodySmall" style={styles.downloadSpeed}>
-                  {l10n.models.modelFile.labels.downloadSpeed.replace(
-                    '{speed}',
-                    downloadSpeed,
-                  )}
+                  {t(l10n.models.modelFile.labels.downloadSpeed, {
+                    speed: downloadSpeed,
+                  })}
                 </Text>
               )}
             </View>

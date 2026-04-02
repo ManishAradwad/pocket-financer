@@ -6,3 +6,4 @@ export * from './BenchmarkStore';
 export * from './FeedbackStore';
 export * from './DeepLinkStore';
 export * from './TransactionStore';
+export * from './ServerStore';

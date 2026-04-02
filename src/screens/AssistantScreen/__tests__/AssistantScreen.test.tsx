@@ -1,4 +1,4 @@
-﻿import React from 'react';
+import React from 'react';
 import { runInAction } from 'mobx';
 
 import { LlamaContext } from 'llama.rn';
@@ -43,6 +43,12 @@ describe('AssistantScreen', () => {
 
   it('renders correctly when model is loaded', () => {
     modelStore.context = new LlamaContext(mockLlamaContextParams);
+    modelStore.engine = {
+      completion: jest.fn((params, onData) =>
+        modelStore.context!.completion(params, onData),
+      ),
+      stopCompletion: jest.fn(),
+    };
     const { getByPlaceholderText } = render(<AssistantScreen />, {
       withNavigation: true,
     });
@@ -58,6 +64,12 @@ describe('AssistantScreen', () => {
     modelStore.context!.completion = jest.fn().mockResolvedValue({
       timings: { predicted_per_token_ms: 10, predicted_per_second: 100 },
     });
+    modelStore.engine = {
+      completion: jest.fn((params, onData) =>
+        modelStore.context!.completion(params, onData),
+      ),
+      stopCompletion: jest.fn(),
+    };
 
     const { getByPlaceholderText, getByTestId } = render(<AssistantScreen />, {
       withNavigation: true,
@@ -97,6 +109,12 @@ describe('AssistantScreen', () => {
     modelStore.context!.completion = jest
       .fn()
       .mockRejectedValue(new Error('Completion failed'));
+    modelStore.engine = {
+      completion: jest.fn((params, onData) =>
+        modelStore.context!.completion(params, onData),
+      ),
+      stopCompletion: jest.fn(),
+    };
 
     const { getByPlaceholderText, getByTestId } = render(<AssistantScreen />, {
       withNavigation: true,
@@ -123,6 +141,12 @@ describe('AssistantScreen', () => {
 
   it('renders different message types correctly', async () => {
     modelStore.context = new LlamaContext(mockLlamaContextParams);
+    modelStore.engine = {
+      completion: jest.fn((params, onData) =>
+        modelStore.context!.completion(params, onData),
+      ),
+      stopCompletion: jest.fn(),
+    };
     jest
       .spyOn(chatSessionStore, 'currentSessionMessages', 'get')
       .mockReturnValue([
@@ -167,6 +191,12 @@ describe('AssistantScreen', () => {
         .fn()
         .mockReturnValue(new Promise(() => { })); // Never resolves
     }
+    modelStore.engine = {
+      completion: jest.fn((params, onData) =>
+        modelStore.context!.completion(params, onData),
+      ),
+      stopCompletion: jest.fn(),
+    };
 
     const { getByPlaceholderText, getByTestId } = render(<AssistantScreen />, {
       withNavigation: true,
@@ -197,6 +227,6 @@ describe('AssistantScreen', () => {
       fireEvent.press(stopButton);
     });
 
-    expect(modelStore.context?.stopCompletion).toHaveBeenCalled();
+    expect(modelStore.engine?.stopCompletion).toHaveBeenCalled();
   });
 });

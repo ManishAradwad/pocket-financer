@@ -143,7 +143,7 @@ export const AssistantScreen: React.FC = observer(() => {
           onThinkingToggle: handleThinkingToggle,
         }}
         textInputProps={{
-          placeholder: !modelStore.context
+          placeholder: !modelStore.engine
             ? modelStore.isContextLoading
               ? l10n.chat.loadingModel
               : l10n.chat.modelNotLoaded

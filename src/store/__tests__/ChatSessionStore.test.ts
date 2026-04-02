@@ -15,6 +15,8 @@ jest.spyOn(chatSessionRepository, 'getSessionById');
 jest.spyOn(chatSessionRepository, 'getSessionMetadataWithSettings');
 jest.spyOn(chatSessionRepository, 'createSession');
 jest.spyOn(chatSessionRepository, 'deleteSession');
+jest.spyOn(chatSessionRepository, 'deleteSessions');
+jest.spyOn(chatSessionRepository, 'exportSessions');
 jest.spyOn(chatSessionRepository, 'addMessageToSession');
 jest.spyOn(chatSessionRepository, 'updateMessage');
 jest.spyOn(chatSessionRepository, 'updateSessionTitle');
@@ -36,6 +38,8 @@ describe('chatSessionStore', () => {
     jest.clearAllMocks();
     chatSessionStore.sessions = [];
     chatSessionStore.activeSessionId = null;
+    chatSessionStore.isSelectionMode = false;
+    chatSessionStore.selectedSessionIds.clear();
   });
 
   describe('loadSessionList', () => {
@@ -138,6 +142,28 @@ describe('chatSessionStore', () => {
       // Session should still be in the store if deletion failed
       expect(chatSessionStore.sessions.length).toBe(1);
     });
+
+    it('cleans up draft for deleted session', async () => {
+      const mockSessionId = 'session1';
+      chatSessionStore.sessions = [
+        {
+          id: mockSessionId,
+          title: 'Session 1',
+          date: new Date().toISOString(),
+          messages: [],
+          completionSettings: defaultCompletionSettings,
+          settingsSource: 'pal',
+        },
+      ];
+      chatSessionStore.saveDraft(mockSessionId, 'unsent text');
+      (chatSessionRepository.deleteSession as jest.Mock).mockResolvedValue(
+        undefined,
+      );
+
+      await chatSessionStore.deleteSession(mockSessionId);
+
+      expect(chatSessionStore.sessionDrafts.has(mockSessionId)).toBe(false);
+    });
   });
 
   describe('addMessageToCurrentSession', () => {
@@ -230,6 +256,89 @@ describe('chatSessionStore', () => {
       expect(
         (chatSessionStore.sessions[0].messages[0] as MessageType.Text).text,
       ).toBe(updatedMessage.text);
+    });
+
+    it('should merge metadata instead of replacing when updating a message', async () => {
+      const messageWithMetadata = {
+        ...mockMessage,
+        metadata: {
+          contextId: 'ctx-1',
+          partialCompletionResult: {
+            reasoning_content: 'I need to think about this...',
+            content: 'The answer is 42.',
+          },
+        },
+      };
+
+      const mockSession = {
+        id: 'session1',
+        title: 'Session 1',
+        date: new Date().toISOString(),
+        messages: [messageWithMetadata],
+        completionSettings: defaultCompletionSettings,
+        settingsSource: 'pal' as 'pal' | 'custom',
+      };
+      chatSessionStore.sessions = [mockSession];
+      chatSessionStore.activeSessionId = mockSession.id;
+
+      (chatSessionRepository.updateMessage as jest.Mock).mockResolvedValue(
+        undefined,
+      );
+
+      // Update with timings - should merge, not replace
+      await chatSessionStore.updateMessage(mockMessage.id, mockSession.id, {
+        metadata: {
+          timings: {total: 100},
+          copyable: true,
+        },
+      });
+
+      const updatedMetadata = (
+        chatSessionStore.sessions[0].messages[0] as MessageType.Text
+      ).metadata;
+
+      // New metadata should be present
+      expect(updatedMetadata?.timings).toEqual({total: 100});
+      expect(updatedMetadata?.copyable).toBe(true);
+
+      // Existing metadata should be preserved (not wiped)
+      expect(updatedMetadata?.contextId).toBe('ctx-1');
+      expect(updatedMetadata?.partialCompletionResult?.reasoning_content).toBe(
+        'I need to think about this...',
+      );
+    });
+
+    it('should handle updateMessage when existing message has no metadata', async () => {
+      const messageWithoutMetadata = {
+        ...mockMessage,
+        metadata: undefined,
+      };
+
+      const mockSession = {
+        id: 'session1',
+        title: 'Session 1',
+        date: new Date().toISOString(),
+        messages: [messageWithoutMetadata],
+        completionSettings: defaultCompletionSettings,
+        settingsSource: 'pal' as 'pal' | 'custom',
+      };
+      chatSessionStore.sessions = [mockSession];
+      chatSessionStore.activeSessionId = mockSession.id;
+
+      (chatSessionRepository.updateMessage as jest.Mock).mockResolvedValue(
+        undefined,
+      );
+
+      await chatSessionStore.updateMessage(mockMessage.id, mockSession.id, {
+        metadata: {
+          timings: {total: 100},
+        },
+      });
+
+      const updatedMetadata = (
+        chatSessionStore.sessions[0].messages[0] as MessageType.Text
+      ).metadata;
+      expect(updatedMetadata?.timings).toEqual({total: 100});
     });
   });
 
@@ -1477,6 +1586,380 @@ describe('chatSessionStore', () => {
       await chatSessionStore.setActiveSession('session2');
       expect(chatSessionStore.sessions[1].messages[0].id).toBe('msg2');
       expect(chatSessionStore.sessions[1].messagesLoaded).toBe(true);
+    });
+  });
+
+  describe('Selection Mode', () => {
+    beforeEach(() => {
+      // Set up some sessions for selection tests
+      chatSessionStore.sessions = [
+        {
+          id: 'session1',
+          title: 'Session 1',
+          date: new Date().toISOString(),
+          messages: [],
+          completionSettings: defaultCompletionSettings,
+          settingsSource: 'pal',
+        },
+        {
+          id: 'session2',
+          title: 'Session 2',
+          date: new Date().toISOString(),
+          messages: [],
+          completionSettings: defaultCompletionSettings,
+          settingsSource: 'pal',
+        },
+        {
+          id: 'session3',
+          title: 'Session 3',
+          date: new Date().toISOString(),
+          messages: [],
+          completionSettings: defaultCompletionSettings,
+          settingsSource: 'pal',
+        },
+      ];
+    });
+
+    describe('enterSelectionMode', () => {
+      it('sets isSelectionMode to true', () => {
+        chatSessionStore.enterSelectionMode();
+        expect(chatSessionStore.isSelectionMode).toBe(true);
+      });
+
+      it('pre-selects the session when sessionId is provided', () => {
+        chatSessionStore.enterSelectionMode('session2');
+        expect(chatSessionStore.isSelectionMode).toBe(true);
+        expect(chatSessionStore.selectedSessionIds.has('session2')).toBe(true);
+        expect(chatSessionStore.selectedCount).toBe(1);
+      });
+
+      it('clears previous selections when entering selection mode', () => {
+        chatSessionStore.selectedSessionIds.add('session1');
+        chatSessionStore.enterSelectionMode('session2');
+        expect(chatSessionStore.selectedSessionIds.has('session1')).toBe(false);
+        expect(chatSessionStore.selectedSessionIds.has('session2')).toBe(true);
+        expect(chatSessionStore.selectedCount).toBe(1);
+      });
+
+      it('enters selection mode without pre-selection when no sessionId provided', () => {
+        chatSessionStore.enterSelectionMode();
+        expect(chatSessionStore.isSelectionMode).toBe(true);
+        expect(chatSessionStore.selectedCount).toBe(0);
+      });
+    });
+
+    describe('exitSelectionMode', () => {
+      it('sets isSelectionMode to false', () => {
+        chatSessionStore.isSelectionMode = true;
+        chatSessionStore.exitSelectionMode();
+        expect(chatSessionStore.isSelectionMode).toBe(false);
+      });
+
+      it('clears all selections', () => {
+        chatSessionStore.isSelectionMode = true;
+        chatSessionStore.selectedSessionIds.add('session1');
+        chatSessionStore.selectedSessionIds.add('session2');
+        chatSessionStore.exitSelectionMode();
+        expect(chatSessionStore.selectedSessionIds.size).toBe(0);
+      });
+    });
+
+    describe('toggleSessionSelection', () => {
+      it('adds session ID when not selected', () => {
+        chatSessionStore.toggleSessionSelection('session1');
+        expect(chatSessionStore.selectedSessionIds.has('session1')).toBe(true);
+        expect(chatSessionStore.selectedCount).toBe(1);
+      });
+
+      it('removes session ID when already selected', () => {
+        chatSessionStore.selectedSessionIds.add('session1');
+        chatSessionStore.toggleSessionSelection('session1');
+        expect(chatSessionStore.selectedSessionIds.has('session1')).toBe(false);
+        expect(chatSessionStore.selectedCount).toBe(0);
+      });
+
+      it('handles multiple toggles correctly', () => {
+        chatSessionStore.toggleSessionSelection('session1');
+        chatSessionStore.toggleSessionSelection('session2');
+        expect(chatSessionStore.selectedCount).toBe(2);
+        chatSessionStore.toggleSessionSelection('session1');
+        expect(chatSessionStore.selectedCount).toBe(1);
+        expect(chatSessionStore.selectedSessionIds.has('session2')).toBe(true);
+      });
+    });
+
+    describe('selectAllSessions', () => {
+      it('adds all session IDs to selectedSessionIds', () => {
+        chatSessionStore.selectAllSessions();
+        expect(chatSessionStore.selectedCount).toBe(3);
+        expect(chatSessionStore.selectedSessionIds.has('session1')).toBe(true);
+        expect(chatSessionStore.selectedSessionIds.has('session2')).toBe(true);
+        expect(chatSessionStore.selectedSessionIds.has('session3')).toBe(true);
+      });
+
+      it('works when some sessions are already selected', () => {
+        chatSessionStore.selectedSessionIds.add('session1');
+        chatSessionStore.selectAllSessions();
+        expect(chatSessionStore.selectedCount).toBe(3);
+      });
+    });
+
+    describe('deselectAllSessions', () => {
+      it('clears all selected session IDs', () => {
+        chatSessionStore.selectedSessionIds.add('session1');
+        chatSessionStore.selectedSessionIds.add('session2');
+        chatSessionStore.deselectAllSessions();
+        expect(chatSessionStore.selectedCount).toBe(0);
+        expect(chatSessionStore.selectedSessionIds.size).toBe(0);
+      });
+    });
+
+    describe('selectedCount computed property', () => {
+      it('returns correct count of selected sessions', () => {
+        expect(chatSessionStore.selectedCount).toBe(0);
+        chatSessionStore.selectedSessionIds.add('session1');
+        expect(chatSessionStore.selectedCount).toBe(1);
+        chatSessionStore.selectedSessionIds.add('session2');
+        expect(chatSessionStore.selectedCount).toBe(2);
+      });
+    });
+
+    describe('allSelected computed property', () => {
+      it('returns true when all sessions are selected', () => {
+        chatSessionStore.selectAllSessions();
+        expect(chatSessionStore.allSelected).toBe(true);
+      });
+
+      it('returns false when partially selected', () => {
+        chatSessionStore.selectedSessionIds.add('session1');
+        expect(chatSessionStore.allSelected).toBe(false);
+      });
+
+      it('returns false when no sessions are selected', () => {
+        expect(chatSessionStore.allSelected).toBe(false);
+      });
+
+      it('returns false when sessions array is empty', () => {
+        chatSessionStore.sessions = [];
+        expect(chatSessionStore.allSelected).toBe(false);
+      });
+    });
+
+    describe('bulkDeleteSessions', () => {
+      it('calls repository deleteSessions with correct IDs', async () => {
+        chatSessionStore.selectedSessionIds.add('session1');
+        chatSessionStore.selectedSessionIds.add('session2');
+
+        (chatSessionRepository.deleteSessions as jest.Mock).mockResolvedValue(
+          undefined,
+        );
+
+        await chatSessionStore.bulkDeleteSessions();
+
+        expect(chatSessionRepository.deleteSessions).toHaveBeenCalledWith([
+          'session1',
+          'session2',
+        ]);
+      });
+
+      it('updates local state correctly after deletion', async () => {
+        chatSessionStore.selectedSessionIds.add('session1');
+        chatSessionStore.selectedSessionIds.add('session3');
+
+        (chatSessionRepository.deleteSessions as jest.Mock).mockResolvedValue(
+          undefined,
+        );
+
+        await chatSessionStore.bulkDeleteSessions();
+
+        expect(chatSessionStore.sessions.length).toBe(1);
+        expect(chatSessionStore.sessions[0].id).toBe('session2');
+      });
+
+      it('resets active session if it was deleted', async () => {
+        chatSessionStore.activeSessionId = 'session2';
+        chatSessionStore.selectedSessionIds.add('session2');
+
+        (chatSessionRepository.deleteSessions as jest.Mock).mockResolvedValue(
+          undefined,
+        );
+
+        const resetSpy = jest.spyOn(chatSessionStore, 'resetActiveSession');
+
+        await chatSessionStore.bulkDeleteSessions();
+
+        expect(resetSpy).toHaveBeenCalled();
+      });
+
+      it('does not reset active session if it was not deleted', async () => {
+        chatSessionStore.activeSessionId = 'session3';
+        chatSessionStore.selectedSessionIds.add('session1');
+
+        (chatSessionRepository.deleteSessions as jest.Mock).mockResolvedValue(
+          undefined,
+        );
+
+        const resetSpy = jest.spyOn(chatSessionStore, 'resetActiveSession');
+
+        await chatSessionStore.bulkDeleteSessions();
+
+        expect(resetSpy).not.toHaveBeenCalled();
+      });
+
+      it('exits selection mode on success', async () => {
+        chatSessionStore.isSelectionMode = true;
+        chatSessionStore.selectedSessionIds.add('session1');
+
+        (chatSessionRepository.deleteSessions as jest.Mock).mockResolvedValue(
+          undefined,
+        );
+
+        await chatSessionStore.bulkDeleteSessions();
+
+        expect(chatSessionStore.isSelectionMode).toBe(false);
+        expect(chatSessionStore.selectedCount).toBe(0);
+      });
+
+      it('handles errors gracefully and re-throws', async () => {
+        chatSessionStore.selectedSessionIds.add('session1');
+
+        const error = new Error('Database error');
+        (chatSessionRepository.deleteSessions as jest.Mock).mockRejectedValue(
+          error,
+        );
+
+        await expect(chatSessionStore.bulkDeleteSessions()).rejects.toThrow(
+          'Database error',
+        );
+
+        // State should not be modified on error
+        expect(chatSessionStore.sessions.length).toBe(3);
+      });
+
+      it('handles empty selection gracefully', async () => {
+        (chatSessionRepository.deleteSessions as jest.Mock).mockResolvedValue(
+          undefined,
+        );
+
+        await chatSessionStore.bulkDeleteSessions();
+
+        expect(chatSessionRepository.deleteSessions).toHaveBeenCalledWith([]);
+        expect(chatSessionStore.sessions.length).toBe(3);
+      });
+
+      it('cleans up drafts for all deleted sessions while preserving others', async () => {
+        chatSessionStore.saveDraft('session1', 'draft A');
+        chatSessionStore.saveDraft('session2', 'draft B');
+        chatSessionStore.saveDraft('session3', 'draft C');
+
+        chatSessionStore.selectedSessionIds.add('session1');
+        chatSessionStore.selectedSessionIds.add('session3');
+        (chatSessionRepository.deleteSessions as jest.Mock).mockResolvedValue(
+          undefined,
+        );
+
+        await chatSessionStore.bulkDeleteSessions();
+
+        expect(chatSessionStore.sessionDrafts.has('session1')).toBe(false);
+        expect(chatSessionStore.sessionDrafts.has('session3')).toBe(false);
+        // Draft for non-deleted session is preserved
+        expect(chatSessionStore.getDraft('session2')).toBe('draft B');
+      });
+    });
+
+    describe('bulkExportSessions', () => {
+      it('calls repository exportSessions with selected IDs', async () => {
+        chatSessionStore.selectedSessionIds.add('session1');
+        chatSessionStore.selectedSessionIds.add('session3');
+
+        (chatSessionRepository.exportSessions as jest.Mock).mockResolvedValue(
+          undefined,
+        );
+
+        await chatSessionStore.bulkExportSessions();
+
+        expect(chatSessionRepository.exportSessions).toHaveBeenCalledWith([
+          'session1',
+          'session3',
+        ]);
+      });
+
+      it('exits selection mode on success', async () => {
+        chatSessionStore.isSelectionMode = true;
+        chatSessionStore.selectedSessionIds.add('session1');
+
+        (chatSessionRepository.exportSessions as jest.Mock).mockResolvedValue(
+          undefined,
+        );
+
+        await chatSessionStore.bulkExportSessions();
+
+        expect(chatSessionStore.isSelectionMode).toBe(false);
+        expect(chatSessionStore.selectedCount).toBe(0);
+      });
+
+      it('handles errors gracefully and re-throws', async () => {
+        chatSessionStore.selectedSessionIds.add('session1');
+
+        const error = new Error('Export failed');
+        (chatSessionRepository.exportSessions as jest.Mock).mockRejectedValue(
+          error,
+        );
+
+        await expect(chatSessionStore.bulkExportSessions()).rejects.toThrow(
+          'Export failed',
+        );
+      });
+
+      it('handles empty selection gracefully', async () => {
+        (chatSessionRepository.exportSessions as jest.Mock).mockResolvedValue(
+          undefined,
+        );
+
+        await chatSessionStore.bulkExportSessions();
+
+        expect(chatSessionRepository.exportSessions).toHaveBeenCalledWith([]);
+      });
+    });
+  });
+
+  describe('Draft autosave', () => {
+    it('saves and retrieves a draft', () => {
+      chatSessionStore.saveDraft('session1', 'Hello world');
+      expect(chatSessionStore.getDraft('session1')).toBe('Hello world');
+    });
+
+    it('returns empty string for non-existent draft', () => {
+      expect(chatSessionStore.getDraft('no-such-session')).toBe('');
+    });
+
+    it('clears a draft', () => {
+      chatSessionStore.saveDraft('session1', 'draft text');
+      chatSessionStore.clearDraft('session1');
+      expect(chatSessionStore.getDraft('session1')).toBe('');
+    });
+
+    it('does not store empty/whitespace-only drafts', () => {
+      chatSessionStore.saveDraft('session1', '   ');
+      expect(chatSessionStore.sessionDrafts.has('session1')).toBe(false);
+    });
+
+    it('removes draft when saving empty text', () => {
+      chatSessionStore.saveDraft('session1', 'some text');
+      expect(chatSessionStore.sessionDrafts.has('session1')).toBe(true);
+      chatSessionStore.saveDraft('session1', '');
+      expect(chatSessionStore.sessionDrafts.has('session1')).toBe(false);
+    });
+
+    it('handles multiple session drafts independently', () => {
+      chatSessionStore.saveDraft('session1', 'draft A');
+      chatSessionStore.saveDraft('session2', 'draft B');
+      expect(chatSessionStore.getDraft('session1')).toBe('draft A');
+      expect(chatSessionStore.getDraft('session2')).toBe('draft B');
+
+      chatSessionStore.clearDraft('session1');
+      expect(chatSessionStore.getDraft('session1')).toBe('');
+      expect(chatSessionStore.getDraft('session2')).toBe('draft B');
     });
   });
 });

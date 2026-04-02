@@ -1,4 +1,4 @@
-import {computed, makeAutoObservable} from 'mobx';
+import {computed, makeAutoObservable, observable} from 'mobx';
 
 import {modelsList} from '../../jest/fixtures/models';
 
@@ -6,6 +6,7 @@ import {downloadManager} from '../services/downloads';
 
 import {Model, ContextInitParams} from '../../src/utils/types';
 import {LlamaContext} from 'llama.rn';
+import {CompletionEngine} from '../../src/utils/completionTypes';
 import {createDefaultContextInitParams} from '../../src/utils/contextInitParamsVersions';
 
 class MockModelStore {
@@ -18,6 +19,11 @@ class MockModelStore {
   inferencing = false;
   isStreaming = false;
   context: LlamaContext | undefined = undefined;
+  engine: CompletionEngine | undefined = undefined;
+
+  // Memory calibration variables
+  availableMemoryCeiling: number | undefined = 5 * 1e9; // 5GB ceiling
+  largestSuccessfulLoad: number | undefined = 4 * 1e9; // 4GB largest successful load
 
   refreshDownloadStatuses: jest.Mock;
   addLocalModel: jest.Mock;
@@ -29,6 +35,8 @@ class MockModelStore {
   setNGPULayers: jest.Mock;
   resetModels: jest.Mock;
   initContext: jest.Mock;
+  selectModel: jest.Mock;
+  setRemoteModel: jest.Mock;
   lastUsedModelId: any;
   checkSpaceAndDownload: jest.Mock;
   getDownloadProgress: jest.Mock;
@@ -48,11 +56,16 @@ class MockModelStore {
   resetModelStopWords: jest.Mock;
   updateModelName: jest.Mock;
   resetModelName: jest.Mock;
+  setImageMaxTokens: jest.Mock;
+  setNThreads: jest.Mock;
+  setNBatch: jest.Mock;
+  setNUBatch: jest.Mock;
   isContextLoading: boolean = false;
   loadingModel: Model | undefined;
 
   constructor() {
     makeAutoObservable(this, {
+      engine: observable.ref,
       refreshDownloadStatuses: false,
       addLocalModel: false,
       setNContext: false,
@@ -61,6 +74,8 @@ class MockModelStore {
       setNGPULayers: false,
       resetModels: false,
       initContext: false,
+      selectModel: false,
+      setRemoteModel: false,
       checkSpaceAndDownload: false,
       getDownloadProgress: false,
       manualReleaseContext: false,
@@ -79,6 +94,11 @@ class MockModelStore {
       resetModelStopWords: false,
       updateModelName: false,
       resetModelName: false,
+      setImageMaxTokens: false,
+      setNThreads: false,
+      setNBatch: false,
+      setNUBatch: false,
+      contextId: computed,
       lastUsedModel: computed,
       activeModel: computed,
       displayModels: computed,
@@ -95,6 +115,8 @@ class MockModelStore {
     this.setNGPULayers = jest.fn();
     this.resetModels = jest.fn();
     this.initContext = jest.fn().mockResolvedValue(Promise.resolve());
+    this.selectModel = jest.fn().mockResolvedValue(Promise.resolve());
+    this.setRemoteModel = jest.fn().mockResolvedValue(Promise.resolve());
     this.checkSpaceAndDownload = jest.fn();
     this.getDownloadProgress = jest.fn();
     this.manualReleaseContext = jest.fn();
@@ -117,6 +139,10 @@ class MockModelStore {
     this.resetModelStopWords = jest.fn();
     this.updateModelName = jest.fn();
     this.resetModelName = jest.fn();
+    this.setImageMaxTokens = jest.fn();
+    this.setNThreads = jest.fn();
+    this.setNBatch = jest.fn();
+    this.setNUBatch = jest.fn();
   }
 
   setActiveModel = (modelId: string) => {
@@ -134,6 +160,13 @@ class MockModelStore {
   // Safe context release methods
   registerCompletionPromise = jest.fn();
   clearCompletionPromise = jest.fn();
+
+  get contextId(): string | undefined {
+    if (this.context) {
+      return String(this.context.id);
+    }
+    return undefined;
+  }
 
   get lastUsedModel(): Model | undefined {
     return this.lastUsedModelId

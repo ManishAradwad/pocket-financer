@@ -39,6 +39,18 @@ export const byText = (text: string): string => {
 };
 
 /**
+ * Create selector targeting only static text elements (excludes buttons).
+ * Useful when a text appears both in a hidden drawer button and a visible nav title.
+ * On Android, also matches View elements (React Navigation renders header titles as Views).
+ */
+export const byStaticText = (text: string): string => {
+  if (isAndroid()) {
+    return `//*[self::android.widget.TextView or self::android.view.View][@text="${text}"]`;
+  }
+  return `-ios class chain:**/XCUIElementTypeStaticText[\`label == "${text}"\`]`;
+};
+
+/**
  * Create selector by partial text match
  */
 export const byPartialText = (text: string): string => {
@@ -181,12 +193,20 @@ export const Selectors = {
     get fabGroupClose(): string {
       return byAccessibilityLabel('Close menu');
     },
-    // FAB actions - use accessibilityLabel (react-native-paper uses label as accessibility label)
+    // FAB actions — react-native-paper FAB.Group renders actions as buttons
+    // with accessibilityLabel as the name; testID gets suffixed with
+    // "-container-outer-layer" so byTestId won't match the tappable element.
     get hfFab(): string {
       return byAccessibilityLabel('Add from Hugging Face');
     },
     get localFab(): string {
       return byAccessibilityLabel('Add Local Model');
+    },
+    get remoteFab(): string {
+      return byAccessibilityLabel('Add Remote Model');
+    },
+    get manageServersFab(): string {
+      return byAccessibilityLabel('Manage Servers');
     },
     get flatList(): string {
       return byTestId('flat-list');
@@ -316,6 +336,11 @@ export const Selectors = {
     get contextSizeInput(): string {
       return byTestId('context-size-input');
     },
+    get languageSelectorButton(): string {
+      return byTestId('language-selector-button');
+    },
+    languageOption: (lang: string): string =>
+      byTestId(`language-option-${lang}`),
   },
 
   // Common dialogs and sheets
@@ -388,6 +413,49 @@ export const Selectors = {
     },
   },
 
+  // Thinking / generation settings
+  thinking: {
+    /** "Think" toggle button - when thinking is currently enabled */
+    get toggleEnabled(): string {
+      return byAccessibilityLabel('Disable thinking mode');
+    },
+    /** "Think" toggle button - when thinking is currently disabled */
+    get toggleDisabled(): string {
+      return byAccessibilityLabel('Enable thinking mode');
+    },
+    /** "Reasoning" header text inside the ThinkingBubble */
+    get bubble(): string {
+      return byText('Reasoning');
+    },
+    /** Chevron icon inside the ThinkingBubble */
+    get chevronIcon(): string {
+      return byTestId('chevron-icon');
+    },
+  },
+
+  // Generation settings sheet
+  generationSettings: {
+    get completionSettings(): string {
+      return byTestId('completion-settings');
+    },
+    /** Temperature slider's text input (testID: temperature-slider-input) */
+    get temperatureInput(): string {
+      return byTestId('temperature-slider-input');
+    },
+    /** Seed integer input (testID: seed-input) */
+    get seedInput(): string {
+      return byTestId('seed-input');
+    },
+    /** Save button (session context) */
+    get saveButton(): string {
+      return byText('Save');
+    },
+    /** Save changes button (preset context) */
+    get saveChangesButton(): string {
+      return byText('Save Changes');
+    },
+  },
+
   // Benchmark screen
   benchmark: {
     get startTestButton(): string {
@@ -398,6 +466,38 @@ export const Selectors = {
     },
     get clearAllButton(): string {
       return byTestId('clear-all-button');
+    },
+  },
+
+  // Remote model sheet (add model from server)
+  remoteModel: {
+    get urlInput(): string {
+      return byTestId('remote-url-input');
+    },
+    get nameInput(): string {
+      return byTestId('remote-name-input');
+    },
+    get apiKeyInput(): string {
+      return byTestId('remote-apikey-input');
+    },
+    get addModelButton(): string {
+      return byTestId('add-model-button');
+    },
+  },
+
+  // Server details sheet (edit/delete server)
+  serverDetails: {
+    get urlInput(): string {
+      return byTestId('server-details-url-input');
+    },
+    get apiKeyInput(): string {
+      return byTestId('server-details-apikey-input');
+    },
+    get removeButton(): string {
+      return byTestId('remove-server-button');
+    },
+    get saveButton(): string {
+      return byTestId('save-server-button');
     },
   },
 };

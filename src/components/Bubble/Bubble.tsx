@@ -13,6 +13,7 @@ import {styles} from './styles';
 
 import {UserContext, L10nContext} from '../../utils';
 import {MessageType} from '../../utils/types';
+import {t} from '../../locales';
 
 const hapticOptions = {
   enableVibrateFallback: true,
@@ -37,21 +38,30 @@ export const Bubble = ({
   const currentUserIsAuthor = user?.id === message.author.id;
   const {copyable, timings} = message.metadata || {};
 
-  const timingsString = l10n.components.bubble.timingsString
-    .replace('{{predictedMs}}', timings?.predicted_per_token_ms?.toFixed())
-    .replace(
-      '{{predictedPerSecond}}',
-      timings?.predicted_per_second?.toFixed(2),
+  // Build timing string from whichever parts are available
+  const timingParts: string[] = [];
+  if (timings?.predicted_per_token_ms != null) {
+    timingParts.push(
+      t(l10n.components.bubble.msPerToken, {
+        value: timings.predicted_per_token_ms.toFixed(),
+      }),
     );
-
-  // Add time to first token if available
-  const timeToFirstTokenString =
-    timings?.time_to_first_token_ms !== undefined &&
-    timings?.time_to_first_token_ms !== null
-      ? `, ${timings.time_to_first_token_ms}ms TTFT`
-      : '';
-
-  const fullTimingsString = timingsString + timeToFirstTokenString;
+  }
+  if (timings?.predicted_per_second != null) {
+    timingParts.push(
+      t(l10n.components.bubble.tokensPerSec, {
+        value: timings.predicted_per_second.toFixed(2),
+      }),
+    );
+  }
+  if (timings?.time_to_first_token_ms != null) {
+    timingParts.push(
+      t(l10n.components.bubble.ttft, {
+        value: timings.time_to_first_token_ms,
+      }),
+    );
+  }
+  const fullTimingsString = timingParts.join(', ');
 
   const {contentContainer, dateHeaderContainer, dateHeader, iconContainer} =
     styles({
@@ -85,7 +95,9 @@ export const Bubble = ({
               <Icon name="content-copy" style={iconContainer} />
             </TouchableOpacity>
           )}
-          {timings && <Text style={dateHeader}>{fullTimingsString}</Text>}
+          {fullTimingsString ? (
+            <Text style={dateHeader}>{fullTimingsString}</Text>
+          ) : null}
         </View>
       )}
     </Animated.View>

@@ -13,7 +13,8 @@ export const createStyles = (theme: Theme) =>
       borderWidth: 1,
     },
     cardContent: {
-      paddingVertical: 6,
+      paddingBottom: 6,
+      paddingTop: 0,
       //paddingHorizontal: 12,
     },
     downloadProgressContainer: {
@@ -33,8 +34,8 @@ export const createStyles = (theme: Theme) =>
     warningContainer: {
       flexDirection: 'row',
       alignItems: 'center',
-      margin: 0,
-      marginTop: 6,
+      paddingHorizontal: 8,
+      marginBottom: 12,
     },
     warningContent: {
       flex: 1,
@@ -42,8 +43,7 @@ export const createStyles = (theme: Theme) =>
       alignItems: 'center',
     },
     warningIcon: {
-      marginLeft: 0,
-      marginRight: 2,
+      margin: 0,
     },
     warningText: {
       color: theme.colors.error,
@@ -96,6 +96,17 @@ export const createStyles = (theme: Theme) =>
       fontSize: 12,
       color: theme.colors.onSurfaceVariant,
       marginLeft: 4,
+    },
+    serverLink: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginRight: 8,
+    },
+    serverLinkText: {
+      fontSize: 12,
+      color: theme.colors.primary,
+      marginLeft: 4,
+      textDecorationLine: 'underline',
     },
     statusDot: {
       width: 8,

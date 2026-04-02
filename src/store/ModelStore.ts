@@ -1,4 +1,5 @@
 import { AppState, AppStateStatus, Platform, Alert } from 'react-native';
+import DeviceInfo from 'react-native-device-info';
 
 import { v4 as uuidv4 } from 'uuid';
 import 'react-native-get-random-values';
@@ -9,12 +10,17 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { ContextParams, LlamaContext, initLlama } from 'llama.rn';
 import {
   CompletionParams,
+  CompletionEngine,
   toApiCompletionParams,
 } from '../utils/completionTypes';
 
 import { fetchModelFilesDetails } from '../api/hf';
-
+import {
+  LocalCompletionEngine,
+  OpenAICompletionEngine,
+} from '../api/completionEngines';
 import { uiStore, hfStore } from '.';
+import { serverStore } from './ServerStore';
 import { chatSessionStore } from './ChatSessionStore';
 import { checkGpuSupport } from '../utils/deviceCapabilities';
 import {
@@ -23,6 +29,7 @@ import {
   hfAsModel,
   getMmprojFiles,
   filterProjectionModels,
+  inferRepoFromModelId,
 } from '../utils';
 import { getRecommendedProjectionModel } from '../utils/multimodalHelpers';
 import { getOriginalModelName } from '../utils/formatters';
@@ -60,6 +67,53 @@ import {
   createContextInitParams,
   createDefaultContextInitParams,
 } from '../utils/contextInitParamsVersions';
+import NativeHardwareInfo from '../specs/NativeHardwareInfo';
+import {getModelMemoryRequirement} from '../utils/memoryEstimator';
+import {loadLlamaModelInfo} from 'llama.rn';
+
+/**
+ * Factory function to create a Model object for a remote model from an OpenAI-compatible server.
+ * Fills all required Model fields with sensible defaults.
+ */
+function createRemoteModel(params: {
+  serverId: string;
+  serverName: string;
+  remoteModelId: string;
+  modelName: string;
+}): Model {
+  const emptyChatTemplate = {
+    name: '',
+    addBosToken: false,
+    addEosToken: false,
+    bosToken: '',
+    eosToken: '',
+    chatTemplate: '',
+    addGenerationPrompt: false,
+  };
+  return {
+    id: `${params.serverId}/${params.remoteModelId}`,
+    name: params.modelName,
+    author: params.serverName,
+    origin: ModelOrigin.REMOTE,
+    isDownloaded: true,
+    isLocal: false,
+    size: 0,
+    params: 0,
+    downloadUrl: '',
+    hfUrl: '',
+    progress: 0,
+    filename: '',
+    defaultChatTemplate: emptyChatTemplate,
+    chatTemplate: emptyChatTemplate,
+    defaultStopWords: [],
+    stopWords: [],
+    defaultCompletionSettings: {} as CompletionParams,
+    completionSettings: {} as CompletionParams,
+    serverId: params.serverId,
+    serverName: params.serverName,
+    remoteModelId: params.remoteModelId,
+  };
+}
 
 class ModelStore {
   models: Model[] = [];
@@ -69,7 +123,7 @@ class ModelStore {
    * Returns models with projection models filtered out for display purposes
    */
   get displayModels(): Model[] {
-    return filterProjectionModels(this.models);
+    return [...filterProjectionModels(this.models), ...this.remoteModels];
   }
 
   appState: AppStateStatus = AppState.currentState;
@@ -93,6 +147,8 @@ class ModelStore {
   activeContextSettings: ContextInitParams | undefined = undefined;
 
   context: LlamaContext | undefined = undefined;
+
+  engine: CompletionEngine | undefined = undefined;
 
   lastUsedModelId: string | undefined = undefined;
 
@@ -121,9 +177,18 @@ class ModelStore {
   downloadError: ErrorState | null = null;
   modelLoadError: ErrorState | null = null;
 
+  // Memory calibration variables (persisted)
+  // Updated at app startup and after model release
+  availableMemoryCeiling: number | undefined = undefined;
+  // Updated after successful model load using GGUF estimator
+  largestSuccessfulLoad: number | undefined = undefined;
+
   constructor() {
-    makeAutoObservable(this, { activeModel: computed });
-    this.initializeThreadCount();
+    makeAutoObservable(this, {
+      activeModel: computed,
+      contextId: computed,
+      remoteModels: computed,
+    });
     makePersistable(this, {
       name: 'ModelStore',
       properties: [
@@ -134,9 +199,12 @@ class ModelStore {
         'lastUsedModelId',
         'wasAutoReleased',
         'lastAutoReleasedModelId',
+        'availableMemoryCeiling',
+        'largestSuccessfulLoad',
       ],
       storage: AsyncStorage,
     }).then(async () => {
+      await this.initializeThreadCount();
       this.initializeStore();
     });
 
@@ -153,13 +221,19 @@ class ModelStore {
           });
         }
       },
-      onComplete: modelId => {
+      onComplete: async modelId => {
         const model = this.models.find(m => m.id === modelId);
         if (model) {
           runInAction(() => {
             model.progress = 100;
             model.isDownloaded = true;
           });
+
+          // Fetch and persist GGUF metadata after download completes
+          // Skip for projection models (CLIP) - they have different metadata structure
+          if (model.modelType !== ModelType.PROJECTION) {
+            await this.fetchAndPersistGGUFMetadata(model);
+          }
         }
       },
       onError: (modelId, error) => {
@@ -186,24 +260,27 @@ class ModelStore {
   private async initializeThreadCount() {
     try {
       const cores = await getCpuCoreCount();
-      this.max_threads = cores;
-
-      const threads = await getRecommendedThreadCount();
       runInAction(() => {
-        this.contextInitParams = {
-          ...this.contextInitParams,
-          n_threads: threads,
-        };
+        this.max_threads = cores;
       });
+
+      // Only set recommended thread count on first launch.
+      // After hydration, this.version is set if the store was previously persisted.
+      // On fresh install, this.version is undefined (default).
+      const isFirstLaunch = this.version === undefined;
+      if (isFirstLaunch) {
+        const threads = await getRecommendedThreadCount();
+        runInAction(() => {
+          this.contextInitParams = {
+            ...this.contextInitParams,
+            n_threads: threads,
+          };
+        });
+      }
     } catch (error) {
       console.error('Failed to initialize thread count:', error);
-      // Fallback to 4 threads if we can't get the CPU info
       runInAction(() => {
         this.max_threads = 4;
-        this.contextInitParams = {
-          ...this.contextInitParams,
-          n_threads: 4,
-        };
       });
     }
   }
@@ -289,6 +366,15 @@ class ModelStore {
     });
   };
 
+  setImageMaxTokens = (image_max_tokens: number) => {
+    runInAction(() => {
+      this.contextInitParams = {
+        ...this.contextInitParams,
+        image_max_tokens,
+      };
+    });
+  };
+
   setUseMlock = (use_mlock: boolean) => {
     runInAction(() => {
       this.contextInitParams = {
@@ -303,6 +389,15 @@ class ModelStore {
       this.contextInitParams = {
         ...this.contextInitParams,
         use_mmap,
+      };
+    });
+  };
+
+  setNoExtraBufts = (no_extra_bufts: boolean) => {
+    runInAction(() => {
+      this.contextInitParams = {
+        ...this.contextInitParams,
+        no_extra_bufts,
       };
     });
   };
@@ -363,6 +458,7 @@ class ModelStore {
       n_parallel: this.contextInitParams.n_parallel ?? 1, // NEW (1 for blocking mode only)
       use_mlock: this.contextInitParams.use_mlock,
       use_mmap: effectiveUseMmap,
+      no_extra_bufts: this.contextInitParams.no_extra_bufts,
     };
 
     // Remove undefined values from the params object
@@ -406,6 +502,7 @@ class ModelStore {
 
   initializeStore = async () => {
     const storedVersion = this.version || 0;
+    console.log('models: ', this.models);
 
     // Sync download manager with active downloads
     await downloadManager.syncWithActiveDownloads(this.models);
@@ -421,6 +518,34 @@ class ModelStore {
     }
 
     await this.initializeGpuSettings(); // Should be awaited to ensure GPU settings are applied before initializing context
+
+    // Initialize available memory ceiling at app startup if not set
+    if (this.availableMemoryCeiling === undefined) {
+      try {
+        const availableBytes = await NativeHardwareInfo.getAvailableMemory();
+        runInAction(() => {
+          this.availableMemoryCeiling = availableBytes;
+        });
+      } catch (error) {
+        // Fallback when native call fails
+        console.warn(
+          '[ModelStore] Native getAvailableMemory failed, using fallback:',
+          error,
+        );
+        const totalMemory = await DeviceInfo.getTotalMemory();
+        // Use conservative heuristic: min(60% of RAM, RAM - 1.2GB)
+        const fallbackCeiling = Math.min(
+          totalMemory * 0.6,
+          totalMemory - 1.2 * 1e9,
+        );
+        runInAction(() => {
+          this.availableMemoryCeiling = Math.max(fallbackCeiling, 0); // Ensure non-negative
+        });
+      }
+    }
+
+    // Load missing GGUF metadata for downloaded models (background, non-blocking)
+    this.loadMissingGGUFMetadata();
 
     // Check if we need to reload an auto-released model (for app restarts)
     this.checkAndReloadAutoReleasedModel();
@@ -512,6 +637,17 @@ class ModelStore {
           ...(model.stopWords || []),
           ...(model.defaultStopWords || []),
         ];
+
+        // Infer repo from model.id if missing (for existing HF models)
+        if (model.origin === ModelOrigin.HF && !model.repo) {
+          const inferredRepo = inferRepoFromModelId(model.id);
+          if (inferredRepo) {
+            model.repo = inferredRepo;
+            console.log(
+              `[ModelStore] Inferred repo "${inferredRepo}" from model.id: ${model.id}`,
+            );
+          }
+        }
       }
     });
 
@@ -548,6 +684,11 @@ class ModelStore {
   }
 
   private markAutoReleased = (modelId: string) => {
+    // Skip auto-release for remote models (no native context to release)
+    const model = this.activeModel;
+    if (model?.origin === ModelOrigin.REMOTE) {
+      return;
+    }
     console.log('Marking auto-released: ', modelId);
     runInAction(() => {
       this.wasAutoReleased = true;
@@ -565,6 +706,16 @@ class ModelStore {
 
   checkAndReloadAutoReleasedModel = async () => {
     if (this.wasAutoReleased && this.lastAutoReleasedModelId) {
+      // Skip if the auto-released model ID refers to a remote model
+      if (this.lastAutoReleasedModelId.includes('/')) {
+        const remoteModel = this.remoteModels.find(
+          m => m.id === this.lastAutoReleasedModelId,
+        );
+        if (remoteModel) {
+          this.clearAutoReleaseFlags();
+          return;
+        }
+      }
       const model = this.models.find(
         m => m.id === this.lastAutoReleasedModelId && m.isDownloaded,
       );
@@ -590,14 +741,25 @@ class ModelStore {
       console.log('Active → Inactive: No auto-release action');
     } else if (this.appState === 'inactive' && nextAppState === 'background') {
       // inactive → background: release if enabled
-      if (this.isAutoReleaseEnabled && this.activeModelId) {
+      // Skip for remote models — no native context to release, and
+      // releaseContext() would clear the engine with no reload path.
+      if (
+        this.isAutoReleaseEnabled &&
+        this.activeModelId &&
+        this.activeModel?.origin !== ModelOrigin.REMOTE
+      ) {
         console.log('Inactive → Background: Auto-releasing context');
         this.markAutoReleased(this.activeModelId);
         await this.releaseContext();
       }
     } else if (this.appState === 'active' && nextAppState === 'background') {
       // active → background: release if enabled (direct transition)
-      if (this.isAutoReleaseEnabled && this.activeModelId) {
+      // Skip for remote models — same reason as above.
+      if (
+        this.isAutoReleaseEnabled &&
+        this.activeModelId &&
+        this.activeModel?.origin !== ModelOrigin.REMOTE
+      ) {
         console.log('Active → Background: Auto-releasing context');
         this.markAutoReleased(this.activeModelId);
         await this.releaseContext();
@@ -655,26 +817,67 @@ class ModelStore {
     // For preset models, check both old and new paths
     if (model.origin === ModelOrigin.PRESET) {
       const author = model.author || 'unknown';
-      const oldPath = `${RNFS.DocumentDirectoryPath}/${model.filename}`; // old path is deprecated. We keep it for now for backwards compatibility.
-      const newPath = `${RNFS.DocumentDirectoryPath}/models/preset/${author}/${model.filename}`;
+      const repo = model.repo || 'unknown';
 
-      // If the file exists in old path, use that (for backwards compatibility)
+      // Very old path (deprecated, for backwards compatibility)
+      const veryOldPath = `${RNFS.DocumentDirectoryPath}/${model.filename}`;
+
+      // Old path (deprecated, for backwards compatibility)
+      const oldPath = `${RNFS.DocumentDirectoryPath}/models/preset/${author}/${model.filename}`;
+
+      // New path structure includes repository name
+      const newPath = `${RNFS.DocumentDirectoryPath}/models/preset/${author}/${repo}/${model.filename}`;
+
+      // Check if file exists at very old path first (for backwards compatibility)
+      try {
+        if (await RNFS.exists(veryOldPath)) {
+          return veryOldPath;
+        }
+      } catch (err) {
+        console.log('Error checking very old preset path:', err);
+      }
+
+      // Check if file exists at old path (for backwards compatibility)
       try {
         if (await RNFS.exists(oldPath)) {
           return oldPath;
         }
       } catch (err) {
-        console.log('Error checking old path:', err);
+        console.log('Error checking old preset path:', err);
       }
 
       // Otherwise use new path
       return newPath;
     }
 
-    // For HF models, use author/model structure
+    // For HF models, use author/repo/model structure with backwards compatibility
     if (model.origin === ModelOrigin.HF) {
       const author = model.author || 'unknown';
-      return `${RNFS.DocumentDirectoryPath}/models/hf/${author}/${model.filename}`;
+
+      // Try to get repo from model, or infer from model.id, or fallback to 'unknown'
+      let repo = model.repo;
+      if (!repo) {
+        repo = inferRepoFromModelId(model.id) || 'unknown';
+      }
+
+      // Old path structure (for backwards compatibility)
+      const oldPath = `${RNFS.DocumentDirectoryPath}/models/hf/${author}/${model.filename}`;
+
+      // New path structure includes repository name
+      const newPath = `${RNFS.DocumentDirectoryPath}/models/hf/${author}/${repo}/${model.filename}`;
+
+      // Check if file exists at old path (backwards compatibility)
+      // This handles: existing downloads, models after reset, models after app update
+      try {
+        if (await RNFS.exists(oldPath)) {
+          return oldPath;
+        }
+      } catch (err) {
+        console.log('Error checking old HF model path:', err);
+      }
+
+      // Otherwise use new path
+      return newPath;
     }
 
     // Fallback (shouldn't reach here)
@@ -968,6 +1171,143 @@ class ModelStore {
   };
 
   /**
+   * Fetch and persist GGUF metadata for a downloaded model
+   * Called after download completes to enable accurate memory estimation
+   */
+  fetchAndPersistGGUFMetadata = async (model: Model) => {
+    try {
+      const filePath = await this.getModelFullPath(model);
+      if (!filePath) {
+        console.warn(
+          '[ModelStore] Cannot fetch GGUF metadata: model path is undefined',
+        );
+        return;
+      }
+
+      const modelInfo = await loadLlamaModelInfo(filePath);
+      if (!modelInfo || typeof modelInfo !== 'object') {
+        console.warn('[ModelStore] Invalid model info returned');
+        return;
+      }
+
+      // Default vocab sizes by architecture (matches Python memory_estimator.py)
+      const ARCH_DEFAULT_VOCAB: Record<string, number> = {
+        llama: 128256,
+        gemma2: 256000,
+        gemma3n: 262144,
+        qwen2: 151936,
+        qwen3: 151936,
+        lfm2: 65536,
+        phi3: 32064,
+        mistral: 32000,
+        deepseek2: 102400,
+        clip: 49408, // CLIP models have smaller vocab
+      };
+
+      // Get the architecture to determine the correct key prefix
+      const architecture: string =
+        (modelInfo as any)['general.architecture'] || 'llama';
+
+      // Helper to get architecture-specific value with fallback (matches Python get_arch_value)
+      const getArchValue = (
+        field: string,
+        defaultValue?: number,
+      ): number | undefined => {
+        const key = `${architecture}.${field}`;
+        const value = (modelInfo as any)[key];
+        if (value !== undefined && value !== null) {
+          // Handle string values (GGUF sometimes returns strings)
+          if (typeof value === 'string') {
+            const parsed = value.includes('.')
+              ? parseFloat(value)
+              : parseInt(value, 10);
+            return isNaN(parsed) ? defaultValue : parsed;
+          }
+          return typeof value === 'number' ? value : defaultValue;
+        }
+        return defaultValue;
+      };
+
+      // Extract core fields (these are required)
+      const n_layers = getArchValue('block_count');
+      const n_embd = getArchValue('embedding_length');
+      const n_head = getArchValue('attention.head_count');
+
+      // Validate core fields exist - without these we can't estimate memory
+      if (!n_layers || !n_embd || !n_head) {
+        return;
+      }
+
+      // Extract optional fields with fallbacks (matches Python ModelInfo.__post_init__)
+      const n_head_kv = getArchValue('attention.head_count_kv', n_head); // fallback to n_head
+      const n_vocab =
+        getArchValue('vocab_size') ||
+        ARCH_DEFAULT_VOCAB[architecture] ||
+        128000;
+
+      // Derive head dimensions if not present (matches Python)
+      const n_embd_head_k =
+        getArchValue('attention.key_length') || Math.floor(n_embd / n_head);
+      const n_embd_head_v =
+        getArchValue('attention.value_length') || Math.floor(n_embd / n_head);
+
+      // SWA (Sliding Window Attention) - optional
+      const sliding_window = getArchValue('attention.sliding_window');
+
+      const metadata = {
+        architecture,
+        n_layers,
+        n_embd,
+        n_head,
+        n_head_kv: n_head_kv!,
+        n_vocab,
+        n_embd_head_k,
+        n_embd_head_v,
+        sliding_window,
+      };
+
+      runInAction(() => {
+        model.ggufMetadata = metadata;
+      });
+    } catch (error) {
+      console.warn('[ModelStore] Failed to fetch GGUF metadata:', error);
+    }
+  };
+
+  /**
+   * Load GGUF metadata for downloaded models that don't have it yet.
+   * Runs in background, doesn't block startup.
+   */
+  private loadMissingGGUFMetadata = () => {
+    const modelsNeedingMetadata = this.models.filter(
+      m =>
+        m.isDownloaded &&
+        !m.ggufMetadata &&
+        m.modelType !== ModelType.PROJECTION,
+    );
+
+    if (modelsNeedingMetadata.length === 0) {
+      return;
+    }
+
+    // Fetch in background, don't block startup
+    (async () => {
+      for (const model of modelsNeedingMetadata) {
+        try {
+          await this.fetchAndPersistGGUFMetadata(model);
+        } catch (error) {
+          // Log but continue - not critical for startup
+          console.warn(
+            '[ModelStore] Failed to fetch metadata for',
+            model.name,
+            error,
+          );
+        }
+      }
+    })();
+  };
+
+  /**
    * Determines whether multimodal (vision) should be enabled for a model load.
    *
    * Resolves multimodal config: enables vision if model supports it and a projection
@@ -1025,10 +1365,11 @@ class ModelStore {
   private checkMemoryAndConfirm = async (
     model: Model,
     isMultimodalInit: boolean,
+    projectionModel?: Model,
   ): Promise<boolean> => {
     let hasMemory = true;
     try {
-      hasMemory = await hasEnoughMemory(model.size, isMultimodalInit);
+      hasMemory = await hasEnoughMemory(model, projectionModel);
     } catch (error) {
       console.error('Memory check failed:', error);
       return false;
@@ -1116,6 +1457,7 @@ class ModelStore {
       const shouldProceed = await this.checkMemoryAndConfirm(
         model,
         isMultimodalInit,
+        projectionModel,
       );
 
       if (!shouldProceed) {
@@ -1233,9 +1575,14 @@ class ModelStore {
           console.log('Initializing multimodal support with path:', mmProjPath);
 
           // Initialize multimodal with the new API format
+          // Apply effective value: clamp image_max_tokens to n_ctx
           const success = await ctx.initMultimodal({
             path: mmProjPath,
             use_gpu: !this.contextInitParams.no_gpu_devices,
+            image_max_tokens: Math.min(
+              this.contextInitParams.image_max_tokens ?? 512,
+              this.contextInitParams.n_ctx,
+            ),
           });
 
           if (!success) {
@@ -1262,10 +1609,34 @@ class ModelStore {
 
       runInAction(() => {
         this.context = ctx;
+        this.engine = new LocalCompletionEngine(ctx);
         this.activeContextSettings = contextInitParams;
         this.setActiveModel(model.id);
         this.pendingModelId = null;
       });
+
+      // Update largestSuccessfulLoad using GGUF estimator
+      try {
+        const estimated = getModelMemoryRequirement(
+          model,
+          projectionModel,
+          contextInitParams,
+        );
+        runInAction(() => {
+          if (
+            this.largestSuccessfulLoad === undefined ||
+            estimated > this.largestSuccessfulLoad
+          ) {
+            this.largestSuccessfulLoad = estimated;
+          }
+        });
+      } catch (error) {
+        console.warn(
+          '[ModelStore] Failed to update largestSuccessfulLoad:',
+          error,
+        );
+      }
+
       return ctx;
     } catch (error) {
       console.error(
@@ -1300,15 +1671,29 @@ class ModelStore {
     console.log('attempt to release');
     chatSessionStore.exitEditMode();
     if (!this.context) {
-      // Even if no context exists, clear state if requested (for deletion scenarios)
-      if (clearActiveModel) {
+      // For remote models or deletion scenarios, clear engine and state
+      if (this.engine || clearActiveModel) {
+        // Stop any active remote completion
+        if (this.engine) {
+          try {
+            await this.engine.stopCompletion();
+          } catch {
+            // Ignore errors from stopping remote completion
+          }
+        }
         runInAction(() => {
-          this.activeModelId = undefined;
+          this.engine = undefined;
+          if (clearActiveModel) {
+            this.activeModelId = undefined;
+          }
           this.isMultimodalActive = false;
           this.activeProjectionModelId = undefined;
         });
       }
-      return 'No context to release';
+      if (!this.engine && !clearActiveModel) {
+        return 'No context to release';
+      }
+      return 'Remote engine cleared';
     }
 
     try {
@@ -1380,6 +1765,7 @@ class ModelStore {
     } finally {
       runInAction(() => {
         this.context = undefined;
+        this.engine = undefined;
         this.activeContextSettings = undefined;
         // Ensure multimodal state is cleared even if something went wrong above
         this.isMultimodalActive = false;
@@ -1389,6 +1775,24 @@ class ModelStore {
           this.activeModelId = undefined;
         }
       });
+
+      // Update availableMemoryCeiling after release (clean state)
+      try {
+        const availableBytes = await NativeHardwareInfo.getAvailableMemory();
+        runInAction(() => {
+          if (
+            this.availableMemoryCeiling === undefined ||
+            availableBytes > this.availableMemoryCeiling
+          ) {
+            this.availableMemoryCeiling = availableBytes;
+          }
+        });
+      } catch (error) {
+        console.warn(
+          '[ModelStore] Failed to update availableMemoryCeiling:',
+          error,
+        );
+      }
     }
     return 'Context released successfully';
   };
@@ -1412,7 +1816,11 @@ class ModelStore {
   };
 
   get activeModel(): Model | undefined {
-    return this.models.find(model => model.id === this.activeModelId);
+    // Look in local models first, then remote models
+    return (
+      this.models.find(model => model.id === this.activeModelId) ||
+      this.remoteModels.find(model => model.id === this.activeModelId)
+    );
   }
 
   get lastUsedModel(): Model | undefined {
@@ -1421,9 +1829,92 @@ class ModelStore {
       : undefined;
   }
 
+  /**
+   * Returns a string context identifier for the active model.
+   * For local models: the numeric native context ID as a string.
+   * For remote models: "remote-{serverId}" string.
+   */
+  get contextId(): string | undefined {
+    if (this.context) {
+      return String(this.context.id);
+    }
+    const model = this.activeModel;
+    if (model?.origin === ModelOrigin.REMOTE && model.serverId) {
+      return `remote-${model.serverId}`;
+    }
+    return undefined;
+  }
+
+  /**
+   * Computed property that derives remote models from serverStore.serverModels.
+   * Remote models are never stored in the models array (which is persisted).
+   */
+  get remoteModels(): Model[] {
+    const models: Model[] = [];
+    for (const selected of serverStore.userSelectedModels) {
+      const server = serverStore.servers.find(s => s.id === selected.serverId);
+      if (!server) {
+        continue;
+      }
+      // Use the remote model ID as the display name
+      models.push(
+        createRemoteModel({
+          serverId: selected.serverId,
+          serverName: server.name,
+          remoteModelId: selected.remoteModelId,
+          modelName: selected.remoteModelId,
+        }),
+      );
+    }
+    return models;
+  }
+
   setActiveModel(modelId: string) {
     this.activeModelId = modelId;
   }
+
+  /**
+   * Set a remote model as the active model and create an OpenAI completion engine.
+   * Releases any active local context first.
+   */
+  setRemoteModel = async (model: Model): Promise<void> => {
+    if (!model.serverId || !model.remoteModelId) {
+      throw new Error('Model is missing remote configuration');
+    }
+
+    // Release any existing context (local or remote)
+    await this.releaseContext();
+
+    const apiKey = await serverStore.getApiKey(model.serverId);
+    const server = serverStore.servers.find(s => s.id === model.serverId);
+    if (!server) {
+      throw new Error('Server not found');
+    }
+
+    runInAction(() => {
+      this.engine = new OpenAICompletionEngine(
+        server.url,
+        model.remoteModelId!,
+        apiKey,
+      );
+      this.setActiveModel(model.id);
+      // Do NOT set lastUsedModelId for remote models -- server may be offline on next launch
+    });
+  };
+
+  /**
+   * Public method that routes model selection to the appropriate handler.
+   * All callsites should use selectModel() instead of initContext() directly.
+   * - Remote models: calls setRemoteModel()
+   * - Local models: calls initContext()
+   */
+  selectModel = async (model: Model): Promise<void> => {
+    if (model.origin === ModelOrigin.REMOTE) {
+      await this.setRemoteModel(model);
+    } else {
+      await this.initContext(model);
+    }
+  };
 
   downloadHFModel = async (
     hfModel: HuggingFaceModel,
@@ -1482,7 +1973,7 @@ class ModelStore {
         uiStore.l10n.errors.downloadSetupFailedTitle,
         uiStore.l10n.errors.downloadSetupFailedMessage.replace(
           '{message}',
-          (error as Error).message,
+          error instanceof Error ? error.message : String(error)
         ),
       );
     }
@@ -1682,6 +2173,9 @@ class ModelStore {
       ];
       model.chatTemplate = { ...defaultSettings.chatTemplate };
       model.stopWords = [...(defaultSettings?.completionParams?.stop || [])];
+
+      // Clear GGUF metadata to force re-fetch with correct number types
+      model.ggufMetadata = undefined;
     });
 
     const hfModels = this.models.filter(
@@ -1698,6 +2192,9 @@ class ModelStore {
       ];
       model.chatTemplate = { ...defaultSettings.chatTemplate };
       model.stopWords = [...(defaultSettings?.completionParams?.stop || [])];
+
+      // Clear GGUF metadata to force re-fetch with correct number types
+      model.ggufMetadata = undefined;
     });
 
     runInAction(() => {
@@ -1707,6 +2204,9 @@ class ModelStore {
 
       this.models = [...this.models, ...localModels, ...hfModels];
     });
+
+    // Re-fetch GGUF metadata with correct number types
+    this.loadMissingGGUFMetadata();
   };
 
   resetModelChatTemplate = (modelId: string) => {
@@ -1911,10 +2411,11 @@ class ModelStore {
   }
 
   /**
-   * Returns available (i.e. downloaded models) models with projection models filtered out
+   * Returns available (i.e. downloaded models) models with projection models filtered out,
+   * plus remote models from configured servers.
    */
   get availableModels(): Model[] {
-    return filterProjectionModels(
+    const localAvailable = filterProjectionModels(
       this.models.filter(
         model =>
           // Include models that are either local or downloaded
@@ -1923,6 +2424,7 @@ class ModelStore {
           model.isDownloaded,
       ),
     );
+    return [...localAvailable, ...this.remoteModels];
   }
 
   setInferencing(value: boolean) {
@@ -2522,8 +3024,8 @@ class ModelStore {
   //  */
   // getL10n() {
   //   const language = uiStore.language;
-  //   // Import the l10n object from utils
-  //   const {l10n} = require('../utils/l10n');
+  //   // Import the l10n object from locales
+  //   const {l10n} = require('../locales');
   //   // Return the localized strings for the current language
   //   return l10n[language];
   // }

@@ -45,8 +45,8 @@ import {useTheme} from '../../hooks';
 
 import {createStyles} from './styles';
 
-import {AvailableLanguage} from '../../store/UIStore';
 import {modelStore, uiStore, hfStore} from '../../store';
+import {languageDisplayNames} from '../../locales';
 
 import {CacheType} from '../../utils/types';
 import {
@@ -55,6 +55,7 @@ import {
   clearAllSessionCaches,
   getSessionCacheInfo,
 } from '../../utils';
+import {t} from '../../locales';
 import {checkGpuSupport} from '../../utils/deviceCapabilities';
 import {exportLegacyChatSessions} from '../../utils/exportUtils';
 import {getDeviceOptions, DeviceOption} from '../../utils/deviceSelection';
@@ -63,22 +64,6 @@ import {
   getAllowedCacheTypeKOptions,
   getAllowedCacheTypeVOptions,
 } from '../../utils/flashAttnCompatibility';
-
-// Language display names in their native form
-const languageNames: Record<AvailableLanguage, string> = {
-  en: 'English (EN)',
-  //es: 'Español (ES)',
-  //de: 'Deutsch (DE)',
-  ja: '日本語 (JA)',
-  //ko: '한국어 (KO)',
-  //pl: 'Polski (PL)',
-  //pt: 'Português (PT)',
-  //ru: 'Русский (RU)',
-  //tr: 'Türkçe (TR)',
-  //uk: 'Українська (UK)',
-  //ca: 'Català (CA)',
-  zh: '中文 (ZH)',
-};
 
 // OpenCL documentation URL (not localized)
 const OPENCL_DOCS_URL =
@@ -97,7 +82,6 @@ export const SettingsScreen: React.FC = observer(() => {
   const [showKeyCacheMenu, setShowKeyCacheMenu] = useState(false);
   const [showValueCacheMenu, setShowValueCacheMenu] = useState(false);
   const [showLanguageMenu, setShowLanguageMenu] = useState(false);
-  const [showMmapMenu, setShowMmapMenu] = useState(false);
   const [showHfTokenDialog, setShowHfTokenDialog] = useState(false);
   const [gpuSupported, setGpuSupported] = useState(false);
   const [keyCacheAnchor, setKeyCacheAnchor] = useState<{x: number; y: number}>({
@@ -112,10 +96,6 @@ export const SettingsScreen: React.FC = observer(() => {
     x: 0.0,
     y: 0.0,
   });
-  const [mmapAnchor, setMmapAnchor] = useState<{x: number; y: number}>({
-    x: 0.0,
-    y: 0.0,
-  });
   const [deviceOptions, setDeviceOptions] = useState<DeviceOption[]>([]);
   const [currentBackend, setCurrentBackend] = useState<
     'metal' | 'opencl' | 'hexagon' | 'cpu' | 'blas'
@@ -123,8 +103,6 @@ export const SettingsScreen: React.FC = observer(() => {
   const keyCacheButtonRef = useRef<View>(null);
   const valueCacheButtonRef = useRef<View>(null);
   const languageButtonRef = useRef<View>(null);
-  const mmapButtonRef = useRef<View>(null);
-
   const debouncedUpdateStore = useRef(
     debounce((value: number) => {
       modelStore.setNContext(value);
@@ -187,7 +165,6 @@ export const SettingsScreen: React.FC = observer(() => {
     setShowKeyCacheMenu(false);
     setShowValueCacheMenu(false);
     setShowLanguageMenu(false);
-    setShowMmapMenu(false);
   };
 
   const handleContextSizeChange = (text: string) => {
@@ -216,31 +193,12 @@ export const SettingsScreen: React.FC = observer(() => {
     currentBackend,
   );
 
-  const mmapOptions = [
-    {label: l10n.settings.useMmapTrue, value: 'true' as const},
-    {label: l10n.settings.useMmapFalse, value: 'false' as const},
-    ...(Platform.OS === 'android'
-      ? [{label: l10n.settings.useMmapSmart, value: 'smart' as const}]
-      : []),
-  ];
-
   const getCacheTypeLabel = (
     value: CacheType | string,
     isValueCache = false,
   ) => {
     const options = isValueCache ? cacheTypeVOptions : cacheTypeKOptions;
     return options.find(option => option.value === value)?.label || value;
-  };
-
-  const getMmapLabel = (value: 'true' | 'false' | 'smart') => {
-    return mmapOptions.find(option => option.value === value)?.label || '';
-  };
-
-  const handleMmapPress = () => {
-    mmapButtonRef.current?.measure((x, y, width, height, pageX, pageY) => {
-      setMmapAnchor({x: pageX, y: pageY + height});
-      setShowMmapMenu(true);
-    });
   };
 
   const getCurrentDeviceId = (): string => {
@@ -315,8 +273,10 @@ export const SettingsScreen: React.FC = observer(() => {
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['bottom']}>
-      <TouchableWithoutFeedback onPress={handleOutsidePress}>
-        <ScrollView contentContainerStyle={styles.container}>
+      <TouchableWithoutFeedback onPress={handleOutsidePress} accessible={false}>
+        <ScrollView
+          contentContainerStyle={styles.container}
+          keyboardShouldPersistTaps="handled">
           {/* Model Initialization Settings */}
           <Card elevation={0} style={styles.card}>
             <Card.Title title={l10n.settings.modelInitializationSettings} />
@@ -371,10 +331,10 @@ export const SettingsScreen: React.FC = observer(() => {
                       step={1}
                     />
                     <Text variant="labelSmall" style={styles.textDescription}>
-                      {l10n.settings.layersOnGPU.replace(
-                        '{{gpuLayers}}',
-                        modelStore.contextInitParams.n_gpu_layers.toString(),
-                      )}
+                      {t(l10n.settings.layersOnGPU, {
+                        gpuLayers:
+                          modelStore.contextInitParams.n_gpu_layers.toString(),
+                      })}
                     </Text>
                   </>
                 ) : (
@@ -435,17 +395,15 @@ export const SettingsScreen: React.FC = observer(() => {
                   keyboardType="numeric"
                   value={contextSize}
                   onChangeText={handleContextSizeChange}
-                  placeholder={l10n.settings.contextSizePlaceholder.replace(
-                    '{{minContextSize}}',
-                    modelStore.MIN_CONTEXT_SIZE.toString(),
-                  )}
+                  placeholder={t(l10n.settings.contextSizePlaceholder, {
+                    minContextSize: modelStore.MIN_CONTEXT_SIZE.toString(),
+                  })}
                 />
                 {!isValidInput && (
                   <Text style={styles.errorText}>
-                    {l10n.settings.invalidContextSizeError.replace(
-                      '{{minContextSize}}',
-                      modelStore.MIN_CONTEXT_SIZE.toString(),
-                    )}
+                    {t(l10n.settings.invalidContextSizeError, {
+                      minContextSize: modelStore.MIN_CONTEXT_SIZE.toString(),
+                    })}
                   </Text>
                 )}
                 <Text variant="labelSmall" style={styles.textDescription}>
@@ -475,18 +433,15 @@ export const SettingsScreen: React.FC = observer(() => {
                       step={1}
                     />
                     <Text variant="labelSmall" style={styles.textDescription}>
-                      {l10n.settings.batchSizeDescription
-                        .replace(
-                          '{{batchSize}}',
+                      {t(l10n.settings.batchSizeDescription, {
+                        batchSize:
                           modelStore.contextInitParams.n_batch.toString(),
-                        )
-                        .replace(
-                          '{{effectiveBatch}}',
+                        effectiveBatch:
                           modelStore.contextInitParams.n_batch >
-                            modelStore.contextInitParams.n_ctx
+                          modelStore.contextInitParams.n_ctx
                             ? ` (${l10n.settings.effectiveLabel}: ${modelStore.contextInitParams.n_ctx})`
                             : '',
-                        )}
+                      })}
                     </Text>
                   </View>
                   <Divider />
@@ -505,24 +460,21 @@ export const SettingsScreen: React.FC = observer(() => {
                       step={1}
                     />
                     <Text variant="labelSmall" style={styles.textDescription}>
-                      {l10n.settings.physicalBatchSizeDescription
-                        .replace(
-                          '{{physicalBatchSize}}',
+                      {t(l10n.settings.physicalBatchSizeDescription, {
+                        physicalBatchSize:
                           modelStore.contextInitParams.n_ubatch.toString(),
-                        )
-                        .replace(
-                          '{{effectivePhysicalBatch}}',
+                        effectivePhysicalBatch:
                           modelStore.contextInitParams.n_ubatch >
-                            Math.min(
-                              modelStore.contextInitParams.n_batch,
-                              modelStore.contextInitParams.n_ctx,
-                            )
+                          Math.min(
+                            modelStore.contextInitParams.n_batch,
+                            modelStore.contextInitParams.n_ctx,
+                          )
                             ? ` (${l10n.settings.effectiveLabel}: ${Math.min(
                                 modelStore.contextInitParams.n_batch,
                                 modelStore.contextInitParams.n_ctx,
                               )})`
                             : '',
-                        )}
+                      })}
                     </Text>
                   </View>
                   <Divider />
@@ -541,15 +493,41 @@ export const SettingsScreen: React.FC = observer(() => {
                       step={1}
                     />
                     <Text variant="labelSmall" style={styles.textDescription}>
-                      {l10n.settings.cpuThreadsDescription
-                        .replace(
-                          '{{threads}}',
+                      {t(l10n.settings.cpuThreadsDescription, {
+                        threads:
                           modelStore.contextInitParams.n_threads.toString(),
-                        )
-                        .replace(
-                          '{{maxThreads}}',
-                          modelStore.max_threads.toString(),
-                        )}
+                        maxThreads: modelStore.max_threads.toString(),
+                      })}
+                    </Text>
+                  </View>
+                  <Divider />
+
+                  {/* Image Max Tokens Slider */}
+                  <View style={styles.settingItemContainer}>
+                    <InputSlider
+                      testID="image-max-tokens-slider"
+                      label={l10n.settings.imageMaxTokens}
+                      value={
+                        modelStore.contextInitParams.image_max_tokens ?? 512
+                      }
+                      onValueChange={value =>
+                        modelStore.setImageMaxTokens(Math.round(value))
+                      }
+                      min={256}
+                      max={4096}
+                      step={1}
+                    />
+                    <Text variant="labelSmall" style={styles.textDescription}>
+                      {t(l10n.settings.imageMaxTokensDescription, {
+                        tokens: (
+                          modelStore.contextInitParams.image_max_tokens ?? 512
+                        ).toString(),
+                        effectiveTokens:
+                          (modelStore.contextInitParams.image_max_tokens ??
+                            512) > modelStore.contextInitParams.n_ctx
+                            ? ` (${l10n.settings.effectiveLabel}: ${modelStore.contextInitParams.n_ctx})`
+                            : '',
+                      })}
                     </Text>
                   </View>
                   <Divider />
@@ -786,43 +764,45 @@ export const SettingsScreen: React.FC = observer(() => {
                       {l10n.settings.useMmapDescription}
                     </Text>
                   </View>
-                  <View style={styles.menuContainer}>
-                    <Button
-                      ref={mmapButtonRef}
-                      mode="outlined"
-                      onPress={handleMmapPress}
-                      style={styles.menuButton}
-                      contentStyle={styles.buttonContent}
-                      icon={({size, color}) => (
-                        <Icon source="chevron-down" size={size} color={color} />
-                      )}>
-                      {getMmapLabel(modelStore.contextInitParams.use_mmap)}
-                    </Button>
-                    <Menu
-                      visible={showMmapMenu}
-                      onDismiss={() => setShowMmapMenu(false)}
-                      anchor={mmapAnchor}
-                      selectable>
-                      {mmapOptions.map(option => (
-                        <Menu.Item
-                          key={option.value}
-                          style={styles.menu}
-                          label={option.label}
-                          selected={
-                            option.value ===
-                            modelStore.contextInitParams.use_mmap
-                          }
-                          onPress={() => {
-                            modelStore.setUseMmap(option.value);
-                            setShowMmapMenu(false);
-                          }}
-                        />
-                      ))}
-                    </Menu>
-                  </View>
+                  <Switch
+                    testID="use-mmap-switch"
+                    value={
+                      modelStore.contextInitParams.use_mmap !== 'false' &&
+                      modelStore.contextInitParams.use_mmap !== 'smart'
+                    }
+                    onValueChange={value =>
+                      modelStore.setUseMmap(value ? 'true' : 'false')
+                    }
+                  />
                 </View>
               </View>
               <Divider />
+
+              {/* Enable Weight Repacking (Android only) */}
+              {Platform.OS === 'android' && (
+                <View style={styles.settingItemContainer}>
+                  <View style={styles.switchContainer}>
+                    <View style={styles.textContainer}>
+                      <Text variant="titleMedium" style={styles.textLabel}>
+                        {l10n.settings.weightRepacking}
+                      </Text>
+                      <Text variant="labelSmall" style={styles.textDescription}>
+                        {l10n.settings.weightRepackingDescription}
+                      </Text>
+                    </View>
+                    <Switch
+                      testID="weight-repacking-switch"
+                      value={
+                        !(modelStore.contextInitParams.no_extra_bufts ?? false)
+                      }
+                      onValueChange={value =>
+                        modelStore.setNoExtraBufts(!value)
+                      }
+                    />
+                  </View>
+                </View>
+              )}
+              {Platform.OS === 'android' && <Divider />}
 
               <Text variant="labelSmall" style={styles.textDescription}>
                 {l10n.settings.modelReloadNotice}
@@ -900,6 +880,7 @@ export const SettingsScreen: React.FC = observer(() => {
                   <View style={styles.menuContainer}>
                     <Button
                       ref={languageButtonRef}
+                      testID="language-selector-button"
                       mode="outlined"
                       onPress={handleLanguagePress}
                       style={styles.menuButton}
@@ -907,7 +888,7 @@ export const SettingsScreen: React.FC = observer(() => {
                       icon={({size, color}) => (
                         <Icon source="chevron-down" size={size} color={color} />
                       )}>
-                      {languageNames[uiStore.language]}
+                      {languageDisplayNames[uiStore.language]}
                     </Button>
                     <Menu
                       visible={showLanguageMenu}
@@ -917,8 +898,9 @@ export const SettingsScreen: React.FC = observer(() => {
                       {uiStore.supportedLanguages.map(lang => (
                         <Menu.Item
                           key={lang}
+                          testID={`language-option-${lang}`}
                           style={styles.menu}
-                          label={languageNames[lang]}
+                          label={languageDisplayNames[lang]}
                           selected={lang === uiStore.language}
                           onPress={() => {
                             uiStore.setLanguage(lang);
@@ -1076,13 +1058,13 @@ export const SettingsScreen: React.FC = observer(() => {
                           const formattedSize = formatBytes(
                             cacheInfo.totalSizeBytes,
                           );
-                          const confirmMessage =
-                            l10n.settings.clearCachesConfirmMessage
-                              .replace(
-                                '{{fileCount}}',
-                                cacheInfo.fileCount.toString(),
-                              )
-                              .replace('{{size}}', formattedSize);
+                          const confirmMessage = t(
+                            l10n.settings.clearCachesConfirmMessage,
+                            {
+                              fileCount: cacheInfo.fileCount.toString(),
+                              size: formattedSize,
+                            },
+                          );
 
                           Alert.alert(
                             l10n.settings.clearCachesConfirmTitle,
@@ -1099,11 +1081,10 @@ export const SettingsScreen: React.FC = observer(() => {
                                   try {
                                     const deletedCount =
                                       await clearAllSessionCaches();
-                                    const successMessage =
-                                      l10n.settings.clearCachesSuccess.replace(
-                                        '{{count}}',
-                                        deletedCount.toString(),
-                                      );
+                                    const successMessage = t(
+                                      l10n.settings.clearCachesSuccess,
+                                      {count: deletedCount.toString()},
+                                    );
                                     Alert.alert(
                                       l10n.settings.clearPalCaches,
                                       successMessage,

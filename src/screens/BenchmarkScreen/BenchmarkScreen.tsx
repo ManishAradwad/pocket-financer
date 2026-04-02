@@ -14,6 +14,7 @@ import {Menu, Dialog, Checkbox} from '../../components';
 
 import {useTheme} from '../../hooks';
 import {L10nContext} from '../../utils';
+import {t} from '../../locales';
 
 import {createStyles} from './styles';
 import {DeviceInfoCard} from './DeviceInfoCard';
@@ -22,7 +23,7 @@ import {BenchResultCard} from './BenchResultCard';
 import {modelStore, benchmarkStore, uiStore} from '../../store';
 
 import type {DeviceInfo, Model} from '../../utils/types';
-import {BenchmarkConfig, BenchmarkResult} from '../../utils/types';
+import {BenchmarkConfig, BenchmarkResult, ModelOrigin} from '../../utils/types';
 
 const DEFAULT_CONFIGS: BenchmarkConfig[] = [
   {pp: 512, tg: 128, pl: 1, nr: 3, label: 'Default'},
@@ -101,7 +102,7 @@ export const BenchmarkScreen: React.FC = observer(() => {
     setShowModelMenu(false);
     if (model.id !== modelStore.activeModelId) {
       try {
-        await modelStore.initContext(model);
+        await modelStore.selectModel(model);
         setSelectedModel(model);
       } catch (error) {
         if (error instanceof Error) {
@@ -292,6 +293,10 @@ export const BenchmarkScreen: React.FC = observer(() => {
     );
   };
 
+  const localModels = modelStore.availableModels.filter(
+    m => m.origin !== ModelOrigin.REMOTE,
+  );
+
   const renderModelSelector = () => (
     <Menu
       visible={showModelMenu}
@@ -311,16 +316,24 @@ export const BenchmarkScreen: React.FC = observer(() => {
             l10n.benchmark.modelSelector.prompt}
         </Button>
       }>
-      {modelStore.availableModels.map(model => (
+      {localModels.length === 0 ? (
         <Menu.Item
-          key={model.id}
-          onPress={() => handleModelSelect(model)}
-          label={model.name}
-          leadingIcon={
-            model.id === modelStore.activeModelId ? 'check' : undefined
-          }
+          key="no-models"
+          label={l10n.benchmark.modelSelector.noModels}
+          disabled
         />
-      ))}
+      ) : (
+        localModels.map(model => (
+          <Menu.Item
+            key={model.id}
+            onPress={() => handleModelSelect(model)}
+            label={model.name}
+            leadingIcon={
+              model.id === modelStore.activeModelId ? 'check' : undefined
+            }
+          />
+        ))
+      )}
     </Menu>
   );
 
@@ -366,10 +379,9 @@ export const BenchmarkScreen: React.FC = observer(() => {
             {name === 'pp' && modelStore.activeContextSettings && (
               <Text style={styles.maxValueHint}>
                 {' '}
-                {l10n.benchmark.messages.modelMaxValue.replace(
-                  '{{maxValue}}',
-                  getMaxPPValue().toString(),
-                )}
+                {t(l10n.benchmark.messages.modelMaxValue, {
+                  maxValue: getMaxPPValue().toString(),
+                })}
               </Text>
             )}
           </Text>

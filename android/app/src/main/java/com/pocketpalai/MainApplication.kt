@@ -13,6 +13,7 @@ import com.facebook.react.soloader.OpenSourceMergedSoMapping
 import com.facebook.soloader.SoLoader
 import com.pocketpal.KeepAwakePackage
 import com.pocketpal.HardwareInfoPackage
+import com.pocketpal.StorefrontPackage
 import com.pocketpal.download.DownloadPackage
 import com.pocketpal.sms.SmsPackage
 
@@ -26,6 +27,7 @@ class MainApplication : Application(), ReactApplication {
               // add(MyReactNativePackage())
               add(KeepAwakePackage())
               add(HardwareInfoPackage())
+              add(StorefrontPackage())
               add(DownloadPackage())
               add(SmsPackage())
             }

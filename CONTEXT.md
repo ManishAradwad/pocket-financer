@@ -147,6 +147,9 @@ npx react-native start                            # Start Metro bundler
 - `android/app/google-services.json` — Placeholder (Firebase to be removed in Phase 1)
 - `.env` — Created from `.env.example` with cloud features disabled
 
+## 📋 TODO / Technical Debt
+- **Migrate l10n to `src/locales/` structure**: Upstream (pocketpal-ai) refactored the monolithic `src/utils/l10n.ts` into a proper `src/locales/` module with JSON-based translations, lazy loading, a `t()` template function, and community translation support via Weblate. We're still using our old `src/utils/l10n.ts`. Migration involves: (1) porting our custom "Pocket-Financer" branded strings into JSON format, (2) converting function-valued strings like `(palName) => \`...\`` to `{{palName}}` templates, (3) updating all imports from `src/utils/l10n` to `src/locales`.
+
 ## 📝 Conventions
 - **Code Style**: ESLint + Prettier (existing config).
 - **Commits**: Relaxed standard. Must start with `feat`, `fix`, `docs`, or `chore` but has no character limits or strict formatting rules (e.g., `feat: added stuff` or `fix: broken sms parser!`).

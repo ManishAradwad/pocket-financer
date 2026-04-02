@@ -56,6 +56,11 @@ class ChatSessionStore {
   // Migration status
   isMigrating: boolean = false;
   migrationComplete: boolean = false;
+  // Draft autosave: ephemeral map of sessionId → unsent input text
+  sessionDrafts: Map<string, string> = new Map();
+  // Selection mode state
+  isSelectionMode: boolean = false;
+  selectedSessionIds: Set<string> = new Set();
 
   constructor() {
     makeAutoObservable(this);
@@ -203,6 +208,7 @@ class ChatSessionStore {
 
       runInAction(() => {
         this.sessions = this.sessions.filter(session => session.id !== id);
+        this.sessionDrafts.delete(id);
       });
     } catch (error) {
       console.error('Failed to delete session:', error);
@@ -522,9 +528,23 @@ class ChatSessionStore {
           if (index >= 0 && session.messages[index].type === 'text') {
             // Update local state - only update the specific message
             runInAction(() => {
+              const existingMessage = session.messages[
+                index
+              ] as MessageType.Text;
+              const mergedUpdate = {...update};
+
+              // Merge metadata instead of replacing, to preserve existing fields
+              // (e.g., partialCompletionResult from streaming)
+              if (update.metadata !== undefined && existingMessage.metadata) {
+                mergedUpdate.metadata = {
+                  ...existingMessage.metadata,
+                  ...update.metadata,
+                };
+              }
+
               session.messages[index] = {
-                ...session.messages[index],
-                ...update,
+                ...existingMessage,
+                ...mergedUpdate,
               } as MessageType.Text;
             });
           }
@@ -741,6 +761,119 @@ class ChatSessionStore {
     }
   }
 
+  // Selection mode computed properties
+  get selectedCount(): number {
+    return this.selectedSessionIds.size;
+  }
+
+  get allSelected(): boolean {
+    return (
+      this.sessions.length > 0 &&
+      this.selectedSessionIds.size === this.sessions.length
+    );
+  }
+
+  // Selection mode actions
+  enterSelectionMode(sessionId?: string) {
+    runInAction(() => {
+      this.isSelectionMode = true;
+      this.selectedSessionIds.clear();
+      if (sessionId) {
+        this.selectedSessionIds.add(sessionId);
+      }
+    });
+  }
+
+  exitSelectionMode() {
+    runInAction(() => {
+      this.isSelectionMode = false;
+      this.selectedSessionIds.clear();
+    });
+  }
+
+  toggleSessionSelection(sessionId: string) {
+    runInAction(() => {
+      if (this.selectedSessionIds.has(sessionId)) {
+        this.selectedSessionIds.delete(sessionId);
+      } else {
+        this.selectedSessionIds.add(sessionId);
+      }
+    });
+  }
+
+  selectAllSessions() {
+    runInAction(() => {
+      this.sessions.forEach(session => {
+        this.selectedSessionIds.add(session.id);
+      });
+    });
+  }
+
+  deselectAllSessions() {
+    runInAction(() => {
+      this.selectedSessionIds.clear();
+    });
+  }
+
+  async bulkDeleteSessions(): Promise<void> {
+    try {
+      const idsToDelete = Array.from(this.selectedSessionIds);
+
+      // Delete from database
+      await chatSessionRepository.deleteSessions(idsToDelete);
+
+      // Check if active session was deleted
+      const wasActiveSessionDeleted =
+        this.activeSessionId && idsToDelete.includes(this.activeSessionId);
+
+      if (wasActiveSessionDeleted) {
+        this.resetActiveSession();
+      }
+
+      // Update local state and exit selection mode
+      runInAction(() => {
+        idsToDelete.forEach(deletedId => this.sessionDrafts.delete(deletedId));
+        this.sessions = this.sessions.filter(
+          session => !idsToDelete.includes(session.id),
+        );
+        this.exitSelectionMode();
+      });
+    } catch (error) {
+      console.error('Failed to bulk delete sessions:', error);
+      throw error;
+    }
+  }
+
+  async bulkExportSessions(): Promise<void> {
+    try {
+      const idsToExport = Array.from(this.selectedSessionIds);
+      await chatSessionRepository.exportSessions(idsToExport);
+
+      runInAction(() => {
+        this.exitSelectionMode();
+      });
+    } catch (error) {
+      console.error('Failed to bulk export sessions:', error);
+      throw error;
+    }
+  }
+
+  // Draft autosave methods (ephemeral, not persisted to DB)
+  saveDraft(sessionId: string, text: string) {
+    if (text.trim()) {
+      this.sessionDrafts.set(sessionId, text);
+    } else {
+      this.sessionDrafts.delete(sessionId);
+    }
+  }
+
+  getDraft(sessionId: string): string {
+    return this.sessionDrafts.get(sessionId) || '';
+  }
+
+  clearDraft(sessionId: string) {
+    this.sessionDrafts.delete(sessionId);
+  }
   /**
    * Resolves completion settings according to the precedence hierarchy:
    * System Defaults → Global User Settings → Session-Specific Settings

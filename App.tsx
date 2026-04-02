@@ -32,6 +32,7 @@ import {
   ModelsHeaderRight,
   HeaderLeft,
   AppWithMigration,
+  MemorySnapshotTrigger,
 } from './src/components';
 import {
   AssistantScreen,
@@ -65,7 +66,7 @@ const App = observer(() => {
 
   // Initialize locale with the current language
   React.useEffect(() => {
-    initLocale(uiStore.language);
+    initLocale(uiStore.language as keyof typeof l10n);
 
     // Check device capabilities
     CapabilityDetectionService.checkAndSelectModel().then((supported) => {
@@ -102,6 +103,7 @@ const App = observer(() => {
 
   return (
     <GestureHandlerRootView style={styles.root}>
+      <MemorySnapshotTrigger />
       <SafeAreaProvider>
         <KeyboardProvider statusBarTranslucent navigationBarTranslucent>
           <PaperProvider theme={theme}>

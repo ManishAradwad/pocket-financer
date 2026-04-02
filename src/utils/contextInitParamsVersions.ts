@@ -13,7 +13,7 @@ import {Platform} from 'react-native';
 
 // Current version of the context init params schema
 // Increment this when adding new parameters or changing existing ones
-export const CURRENT_CONTEXT_INIT_PARAMS_VERSION = '2.0';
+export const CURRENT_CONTEXT_INIT_PARAMS_VERSION = '2.2';
 
 /**
  * Creates properly versioned ContextInitParams from ContextParams (excluding model)
@@ -29,7 +29,7 @@ export const createContextInitParams = (
       ? 'true'
       : params.use_mmap === false
         ? 'false'
-        : (params.use_mmap ?? (Platform.OS === 'android' ? 'smart' : 'true'));
+        : (params.use_mmap ?? (Platform.OS === 'android' ? 'false' : 'true'));
 
   // Handle flash_attn_type (new) vs flash_attn (old)
   const flash_attn_type =
@@ -54,6 +54,12 @@ export const createContextInitParams = (
     devices: (params as any).devices,
     kv_unified: (params as any).kv_unified ?? true, // CRITICAL default
     n_parallel: (params as any).n_parallel ?? 1, // Blocking completion only
+
+    // v2.1+
+    image_max_tokens: (params as any).image_max_tokens ?? 512, // Device-appropriate default
+
+    // v2.2+
+    no_extra_bufts: (params as any).no_extra_bufts ?? false, // Default ON: repack enabled (mmap OFF + repack ON is optimal on Android)
   };
 };
 
@@ -163,6 +169,31 @@ export function migrateContextInitParams(
     migratedParams.version = '2.0';
   }
 
+  // Migration from 2.0 to 2.1: image_max_tokens
+  if (migratedParams.version === '2.0') {
+    // Add image_max_tokens with device-appropriate default
+    if (migratedParams.image_max_tokens === undefined) {
+      migratedParams.image_max_tokens = 512;
+    }
+
+    migratedParams.version = '2.1';
+  }
+
+  // Migration from 2.1 to 2.2: enable repack + disable mmap on Android
+  if (migratedParams.version === '2.1') {
+    // Enable weight repacking (no_extra_bufts=false means repack ON)
+    if (migratedParams.no_extra_bufts === undefined) {
+      migratedParams.no_extra_bufts = false;
+    }
+
+    // Migrate 'smart' mmap to 'false' on Android (mmap OFF + repack ON is optimal)
+    if (Platform.OS === 'android' && migratedParams.use_mmap === 'smart') {
+      migratedParams.use_mmap = 'false';
+    }
+
+    migratedParams.version = '2.2';
+  }
+
   // Ensure the final version is set correctly
   migratedParams.version = CURRENT_CONTEXT_INIT_PARAMS_VERSION;
 
@@ -214,12 +245,18 @@ export function createDefaultContextInitParams(): ContextInitParams {
     cache_type_v: 'f16',
     n_gpu_layers: 99, // All layers
     use_mlock: false,
-    use_mmap: Platform.OS === 'android' ? 'smart' : 'true',
+    use_mmap: Platform.OS === 'android' ? 'false' : 'true',
 
     // New v2.0 parameters
     devices: undefined, // Auto-select
     flash_attn_type: Platform.OS === 'ios' ? 'auto' : 'off',
     kv_unified: true, // CRITICAL: saves ~7GB memory
     n_parallel: 1, // App only uses blocking completion()
+
+    // v2.1 parameters
+    image_max_tokens: 512, // Device-appropriate default
+
+    // v2.2 parameters
+    no_extra_bufts: false, // Repack ON: mmap OFF + repack ON is optimal on Android
   };
 }

@@ -91,3 +91,7 @@ e2e/device-farm-artifacts/
 e2e/test-package.zip
 e2e/testspec-*-allmodels.yml
 sms.db
+
+# E2E pipeline
+e2e/devices.json
+e2e/reports/

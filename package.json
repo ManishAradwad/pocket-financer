@@ -1,6 +1,6 @@
 {
   "name": "PocketPal",
-  "version": "1.11.16",
+  "version": "1.13.1",
   "private": true,
   "scripts": {
     "prepare": "husky",
@@ -12,6 +12,7 @@
     "clean": "yarn clean:android",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
+    "l10n:validate": "node scripts/validate-l10n.js",
     "lint:fix": "eslint \"**/*.{js,ts,tsx}\" --fix",
     "format": "prettier --write \"**/*.{js,ts,tsx,json,md}\"",
     "start": "react-native start",
@@ -37,7 +38,7 @@
     "chat-formatter": "^0.3.4",
     "date-fns": "^4.1.0",
     "dayjs": "^1.11.18",
-    "llama.rn": "0.11.0-rc.2",
+    "llama.rn": "0.12.0-rc.2",
     "marked": "^16.4.0",
     "mobx": "^6.15.0",
     "mobx-persist-store": "^1.1.8",

@@ -96,6 +96,22 @@ describe('BenchmarkScreen', () => {
       });
     });
 
+    it('should show placeholder when no models are available', () => {
+      const originalModels = modelStore.models;
+      modelStore.models = [];
+
+      const {getByText} = render(<BenchmarkScreen />);
+
+      // Open model selector
+      fireEvent.press(getByText('Select Model'));
+
+      // Verify placeholder is shown
+      expect(getByText('No models downloaded')).toBeDefined();
+
+      // Restore
+      modelStore.models = originalModels;
+    });
+
     it('should initialize model when selected', async () => {
       const {getByText} = render(<BenchmarkScreen />);
       const modelToSelect = modelStore.availableModels[0];
@@ -104,8 +120,8 @@ describe('BenchmarkScreen', () => {
       fireEvent.press(getByText('Select Model'));
       fireEvent.press(getByText(modelToSelect.name));
 
-      // Verify initContext was called
-      expect(modelStore.initContext).toHaveBeenCalledWith(modelToSelect);
+      // Verify selectModel was called
+      expect(modelStore.selectModel).toHaveBeenCalledWith(modelToSelect);
     });
   });
 
@@ -405,14 +421,15 @@ describe('BenchmarkScreen', () => {
       // Add results to store
       benchmarkStore.results = [mockResult, mockSubmittedResult];
 
-      const {getAllByTestId, getByText} = render(<BenchmarkScreen />);
+      const {getAllByTestId, getAllByText} = render(<BenchmarkScreen />);
 
       // Delete first result
       const deleteButtons = getAllByTestId('delete-result-button');
       fireEvent.press(deleteButtons[0]);
 
-      // Confirm deletion
-      fireEvent.press(getByText('Delete'));
+      // Confirm deletion (dialog button is the last "Delete" text on screen)
+      const allDeleteTexts = getAllByText('Delete');
+      fireEvent.press(allDeleteTexts[allDeleteTexts.length - 1]);
 
       // Verify deletion
       expect(benchmarkStore.removeResult).toHaveBeenCalledWith(
