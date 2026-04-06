@@ -1,4 +1,4 @@
-import React, {useCallback, useState, useEffect, useMemo} from 'react';
+import React, { useCallback, useState, useEffect, useMemo } from 'react';
 import {
   Alert,
   Linking,
@@ -26,13 +26,13 @@ import {
   HelperText,
 } from 'react-native-paper';
 
-import {ProjectionModelSelector, MemoryRequirement} from '../../../components';
+import { ProjectionModelSelector, MemoryRequirement } from '../../../components';
 
 import { useTheme, useMemoryCheck, useStorageCheck } from '../../../hooks';
 
 import { createStyles } from './styles';
 
-import {uiStore, modelStore, serverStore} from '../../../store';
+import { uiStore, modelStore, serverStore } from '../../../store';
 
 import {
   Model,
@@ -79,7 +79,7 @@ if (
 }
 
 export const ModelCard: React.FC<ModelCardProps> = observer(
-  ({model, activeModelId, onOpenSettings, onOpenServerDetails}) => {
+  ({ model, activeModelId, onOpenSettings, onOpenServerDetails }) => {
     const l10n = React.useContext(L10nContext);
     const theme = useTheme();
     const styles = createStyles(theme);
@@ -108,9 +108,9 @@ export const ModelCard: React.FC<ModelCardProps> = observer(
       [model, modelStore.models],
     );
 
-    const {memoryWarning, shortMemoryWarning, multimodalWarning} =
+    const { memoryWarning, shortMemoryWarning, multimodalWarning } =
       useMemoryCheck(model, projectionModelForCheck);
-    const {isOk: storageOk, message: storageNOkMessage} = useStorageCheck(
+    const { isOk: storageOk, message: storageNOkMessage } = useStorageCheck(
       model,
       {
         enablePeriodicCheck: true,
@@ -135,7 +135,7 @@ export const ModelCard: React.FC<ModelCardProps> = observer(
     // Check integrity when model is downloaded (skip remote models — no local file)
     useEffect(() => {
       if (isDownloaded && !isRemoteModel) {
-        checkModelFileIntegrity(model).then(({errorMessage}) => {
+        checkModelFileIntegrity(model).then(({ errorMessage }) => {
           setIntegrityError(errorMessage);
         });
       } else {
@@ -340,7 +340,7 @@ export const ModelCard: React.FC<ModelCardProps> = observer(
         l10n.common.delete,
         `Are you sure you want to remove the remote model ${model.name} from ${sName}?`,
         [
-          {text: l10n.common.cancel, style: 'cancel'},
+          { text: l10n.common.cancel, style: 'cancel' },
           {
             text: l10n.common.delete,
             style: 'destructive',
