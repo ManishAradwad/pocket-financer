@@ -1,3 +1,5 @@
+import * as React from 'react';
+
 import _ from 'lodash';
 import dayjs from 'dayjs';
 
@@ -5,7 +7,10 @@ import enData from './en.json';
 
 import type {Translations} from './types';
 
-// ─── Language Registry (single source of truth) ──────────────────────
+// ─── L10nContext (single source of truth for localization) ──────────
+export const L10nContext = React.createContext<Translations>(enData);
+
+// ─── Language Registry
 // To add a language: 1) add entry here, 2) place JSON in src/locales/,
 // 3) add case to requireLanguageData(), 4) add getter to l10n object.
 const languageRegistry = {

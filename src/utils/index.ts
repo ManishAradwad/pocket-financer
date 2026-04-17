@@ -8,7 +8,7 @@ import DeviceInfo from 'react-native-device-info';
 import Blob from 'react-native/Libraries/Blob/Blob';
 import * as RNFS from '@dr.pogodin/react-native-fs';
 
-import { l10n } from './l10n';
+import { l10n } from '../locales';
 import { modelStore } from '../store';
 import { getHFDefaultSettings } from './chat';
 import { formatBytes, formatNumber } from './formatters';
@@ -31,9 +31,8 @@ import {
   getVisionModelSizeBreakdown,
 } from './multimodalHelpers';
 
-export const L10nContext = React.createContext<
-  (typeof l10n)[keyof typeof l10n]
->(l10n.en);
+export { L10nContext } from '../locales';
+export { initLocale } from '../locales';
 export const UserContext = React.createContext<User | undefined>(undefined);
 
 /** Returns size in bytes of the provided text */
@@ -77,26 +76,6 @@ export const hashCode = (text = '') => {
   return Math.abs(hash);
 };
 
-/** Inits dayjs locale */
-export const initLocale = (locale?: keyof typeof l10n) => {
-  const locales: { [key in keyof typeof l10n]: unknown } = {
-    en: require('dayjs/locale/en'),
-    // es: require('dayjs/locale/es'),
-    // ko: require('dayjs/locale/ko'),
-    // pl: require('dayjs/locale/pl'),
-    // pt: require('dayjs/locale/pt'),
-    // ru: require('dayjs/locale/ru'),
-    // tr: require('dayjs/locale/tr'),
-    // uk: require('dayjs/locale/uk'),
-    // ca: require('dayjs/locale/ca'),
-    // de: require('dayjs/locale/de'),
-    ja: require('dayjs/locale/ja'),
-    zh: require('dayjs/locale/zh'),
-  };
-
-  locale ? locales[locale] : locales.en;
-  dayjs.locale(locale);
-};
 /** Returns either prop or empty object if null or undefined */
 export const unwrap = <T>(prop: T) => prop ?? {};
 

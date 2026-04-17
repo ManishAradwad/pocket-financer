@@ -152,7 +152,6 @@ describe('chatSessionStore', () => {
           date: new Date().toISOString(),
           messages: [],
           completionSettings: defaultCompletionSettings,
-          settingsSource: 'pal',
         },
       ];
       chatSessionStore.saveDraft(mockSessionId, 'unsent text');
@@ -276,7 +275,6 @@ describe('chatSessionStore', () => {
         date: new Date().toISOString(),
         messages: [messageWithMetadata],
         completionSettings: defaultCompletionSettings,
-        settingsSource: 'pal' as 'pal' | 'custom',
       };
       chatSessionStore.sessions = [mockSession];
       chatSessionStore.activeSessionId = mockSession.id;
@@ -320,7 +318,6 @@ describe('chatSessionStore', () => {
         date: new Date().toISOString(),
         messages: [messageWithoutMetadata],
         completionSettings: defaultCompletionSettings,
-        settingsSource: 'pal' as 'pal' | 'custom',
       };
       chatSessionStore.sessions = [mockSession];
       chatSessionStore.activeSessionId = mockSession.id;
@@ -1599,7 +1596,6 @@ describe('chatSessionStore', () => {
           date: new Date().toISOString(),
           messages: [],
           completionSettings: defaultCompletionSettings,
-          settingsSource: 'pal',
         },
         {
           id: 'session2',
@@ -1607,7 +1603,6 @@ describe('chatSessionStore', () => {
           date: new Date().toISOString(),
           messages: [],
           completionSettings: defaultCompletionSettings,
-          settingsSource: 'pal',
         },
         {
           id: 'session3',
@@ -1615,7 +1610,6 @@ describe('chatSessionStore', () => {
           date: new Date().toISOString(),
           messages: [],
           completionSettings: defaultCompletionSettings,
-          settingsSource: 'pal',
         },
       ];
     });

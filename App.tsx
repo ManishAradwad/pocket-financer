@@ -22,7 +22,7 @@ import { useTheme } from './src/hooks';
 import { useDeepLinking } from './src/hooks/useDeepLinking';
 import { Theme } from './src/utils/types';
 
-import { l10n } from './src/utils/l10n';
+import { l10n, AvailableLanguage } from './src/locales';
 import { initLocale } from './src/utils';
 import { L10nContext } from './src/utils';
 import { ROUTES } from './src/utils/navigationConstants';
@@ -66,7 +66,7 @@ const App = observer(() => {
 
   // Initialize locale with the current language
   React.useEffect(() => {
-    initLocale(uiStore.language as keyof typeof l10n);
+    initLocale(uiStore.language as AvailableLanguage);
 
     // Check device capabilities
     CapabilityDetectionService.checkAndSelectModel().then((supported) => {

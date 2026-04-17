@@ -162,7 +162,7 @@ export const useMemoryCheck = (
           // Detailed message with numbers
           const neededText = formatBytes(requiredBytes, 1);
           const availableText = formatBytes(availableBytes, 1);
-          setMemoryWarning(`${l10n.memory.warning} (Needed limit: ~${neededText}, Recommended limit: ~${availableText})`);
+          setMemoryWarning(`${l10n.memory.shortWarning} (Needed limit: ~${neededText}, Recommended limit: ~${availableText})`);
         }
 
         // Additional check for multimodal capability
