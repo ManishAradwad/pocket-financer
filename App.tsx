@@ -38,7 +38,6 @@ import {
   AssistantScreen,
   ModelsScreen,
   SettingsScreen,
-  BenchmarkScreen,
   AboutScreen,
 
   // Dev tools screen. Only available in debug mode.
@@ -76,7 +75,7 @@ const App = observer(() => {
         SmsService.hasPermissions().then(hasPerms => {
           if (hasPerms) {
             SmsService.startListening((sms) => {
-              PipelineService.processSms(sms.body);
+              PipelineService.processSms(sms);
             });
           }
         });
@@ -138,14 +137,6 @@ const App = observer(() => {
                         headerRight: () => <ModelsHeaderRight />,
                         headerStyle: styles.headerWithoutDivider,
                         title: currentL10n.screenTitles.models,
-                      }}
-                    />
-                    <Drawer.Screen
-                      name={ROUTES.BENCHMARK}
-                      component={gestureHandlerRootHOC(BenchmarkScreen)}
-                      options={{
-                        headerStyle: styles.headerWithoutDivider,
-                        title: currentL10n.screenTitles.benchmark,
                       }}
                     />
                     <Drawer.Screen

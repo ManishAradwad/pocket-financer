@@ -1,31 +1,20 @@
-﻿import React, { useState, useContext } from 'react';
+import React, { useContext } from 'react';
 import {
   View,
   ScrollView,
   TouchableOpacity,
   Alert,
   Linking,
-  Platform,
 } from 'react-native';
 
 import DeviceInfo from 'react-native-device-info';
 import Clipboard from '@react-native-clipboard/clipboard';
-import { Text, Button, SegmentedButtons } from 'react-native-paper';
+import { Text, Button } from 'react-native-paper';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { BuildInfo } from 'llama.rn';
 
-import { submitFeedback } from '../../api/feedback';
-import SmsService from '../../services/sms/SmsService';
-import { PipelineService } from '../../services/pipeline/PipelineService';
+import { CopyIcon, GithubIcon } from '../../assets/icons';
 
-import {
-  CopyIcon,
-  GithubIcon,
-  ChevronRightIcon,
-  HeartIcon,
-} from '../../assets/icons';
-
-import { Sheet, TextInput } from '../../components';
 import { useTheme } from '../../hooks';
 import { createStyles } from './styles';
 import { L10nContext } from '../../utils';
@@ -34,71 +23,23 @@ const GithubButtonIcon = ({ color }: { color: string }) => (
   <GithubIcon stroke={color} />
 );
 
-const ChevronRightButtonIcon = ({ color }: { color: string }) => (
-  <ChevronRightIcon stroke={color} />
-);
-
 export const AboutScreen: React.FC = () => {
   const theme = useTheme();
   const insets = useSafeAreaInsets();
   const styles = createStyles(theme, insets);
   const l10n = useContext(L10nContext);
-  const [showFeedback, setShowFeedback] = useState(false);
 
   const [appInfo, setAppInfo] = React.useState({
     version: '',
     build: '',
   });
 
-  const [useCase, setUseCase] = useState('');
-  const [featureRequests, setFeatureRequests] = useState('');
-  const [generalFeedback, setGeneralFeedback] = useState('');
-  const [usageFrequency, setUsageFrequency] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [smsData, setSmsData] = useState<string>('No SMS Data yet.');
-
   React.useEffect(() => {
-    const version = DeviceInfo.getVersion();
-    const buildNumber = DeviceInfo.getBuildNumber();
     setAppInfo({
-      version,
-      build: buildNumber,
+      version: DeviceInfo.getVersion(),
+      build: DeviceInfo.getBuildNumber(),
     });
   }, []);
-
-  const testSmsHistory = async () => {
-    try {
-      const hasPerms = await SmsService.requestPermissions();
-      if (!hasPerms) {
-        setSmsData('Permissions denied.');
-        return;
-      }
-      const history = await SmsService.fetchSmsHistory({ limit: 5 });
-      setSmsData(JSON.stringify(history, null, 2));
-    } catch (e: any) {
-      setSmsData(`Error fetching history: ${e.message}`);
-    }
-  };
-
-  const testSmsListener = async () => {
-    try {
-      const hasPerms = await SmsService.requestPermissions();
-      if (!hasPerms) {
-        setSmsData('Permissions denied.');
-        return;
-      }
-      setSmsData('Listening for new SMS...');
-      SmsService.startListening(sms => {
-        setSmsData(prev => `NEW SMS RECEIVED:\n${JSON.stringify(sms, null, 2)}\n\n` + prev);
-
-        if (sms.body) {
-          PipelineService.processSms(sms.body);
-        }
-      });
-    } catch (e: any) {
-      setSmsData(`Error starting listener: ${e.message}`);
-    }
-  };
 
   const copyVersionToClipboard = () => {
     const versionString = `Version ${appInfo.version} (${appInfo.build})`;
@@ -107,36 +48,6 @@ export const AboutScreen: React.FC = () => {
       l10n.about.versionCopiedTitle,
       l10n.about.versionCopiedDescription,
     );
-  };
-
-  const handleSubmit = async () => {
-    if (!useCase && !featureRequests && !generalFeedback) {
-      Alert.alert(l10n.feedback.validation.required);
-      return;
-    }
-
-    setIsSubmitting(true);
-    try {
-      await submitFeedback({
-        useCase,
-        featureRequests,
-        generalFeedback,
-        usageFrequency,
-      });
-      Alert.alert('Success', l10n.feedback.success);
-      setShowFeedback(false);
-      // Clear form
-      setUseCase('');
-      setFeatureRequests('');
-      setGeneralFeedback('');
-      setUsageFrequency('');
-    } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : l10n.feedback.error.general;
-      Alert.alert('Error', errorMessage);
-    } finally {
-      setIsSubmitting(false);
-    }
   };
 
   return (
@@ -166,8 +77,7 @@ export const AboutScreen: React.FC = () => {
                 </TouchableOpacity>
               </View>
               <Text style={styles.llamaBuildText}>
-                llama.cpp {BuildInfo.number} ({BuildInfo.commit.substring(0, 7)}
-                )
+                llama.cpp {BuildInfo.number} ({BuildInfo.commit.substring(0, 7)})
               </Text>
             </View>
           </View>
@@ -180,140 +90,15 @@ export const AboutScreen: React.FC = () => {
             <Button
               mode="outlined"
               onPress={() =>
-                Linking.openURL('https://github.com/a-ghorbani/Pocket-Financer-ai')
+                Linking.openURL('https://github.com/ManishAradwad/pocket-financer')
               }
               style={styles.actionButton}
               icon={GithubButtonIcon}>
               {l10n.about.githubButton}
             </Button>
-            {Platform.OS !== 'ios' && (
-              <>
-                <Text style={styles.orText}>{l10n.about.orText}</Text>
-                <TouchableOpacity
-                  style={styles.supportButton}
-                  onPress={() =>
-                    Linking.openURL('https://www.buymeacoffee.com/aghorbani')
-                  }>
-                  <HeartIcon stroke={theme.colors.onPrimary} />
-                  <Text style={styles.supportButtonText}>
-                    {l10n.about.sponsorButton}
-                  </Text>
-                </TouchableOpacity>
-              </>
-            )}
-            <Text style={styles.orText}>{l10n.about.orBy}</Text>
-            <Button
-              mode="outlined"
-              style={styles.actionButton}
-              contentStyle={styles.feedbackButtonContent}
-              icon={ChevronRightButtonIcon}
-              onPress={() => setShowFeedback(true)}>
-              {l10n.feedback.shareThoughtsButton}
-            </Button>
-          </View>
-
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Dev Tools: SMS Test</Text>
-            <Button mode="contained" onPress={testSmsHistory} style={styles.actionButton}>
-              Read Last 5 SMS (History)
-            </Button>
-            <Button mode="outlined" onPress={testSmsListener} style={styles.actionButton}>
-              Start SMS Listener
-            </Button>
-            <View style={{ backgroundColor: theme.colors.surfaceVariant, padding: 8, marginTop: 8, borderRadius: 8 }}>
-              <Text>{smsData}</Text>
-            </View>
           </View>
         </View>
       </ScrollView>
-
-      <Sheet
-        title={l10n.feedback.title}
-        isVisible={showFeedback}
-        displayFullHeight
-        onClose={() => setShowFeedback(false)}>
-        <Sheet.ScrollView contentContainerStyle={styles.feedbackForm}>
-          <View style={styles.field}>
-            <Text style={styles.label}>{l10n.feedback.useCase.label}</Text>
-            <TextInput
-              defaultValue={useCase}
-              onChangeText={setUseCase}
-              placeholder={l10n.feedback.useCase.placeholder}
-              multiline
-              numberOfLines={4}
-            />
-          </View>
-
-          <View style={styles.field}>
-            <Text style={styles.label}>
-              {l10n.feedback.featureRequests.label}
-            </Text>
-            <TextInput
-              defaultValue={featureRequests}
-              onChangeText={setFeatureRequests}
-              placeholder={l10n.feedback.featureRequests.placeholder}
-              multiline
-              numberOfLines={4}
-            />
-          </View>
-
-          <View style={styles.field}>
-            <Text style={styles.label}>
-              {l10n.feedback.generalFeedback.label}
-            </Text>
-            <TextInput
-              defaultValue={generalFeedback}
-              onChangeText={setGeneralFeedback}
-              placeholder={l10n.feedback.generalFeedback.placeholder}
-              multiline
-              numberOfLines={4}
-            />
-          </View>
-
-          <View style={styles.field}>
-            <Text style={styles.label}>
-              {l10n.feedback.usageFrequency.label}
-            </Text>
-            <SegmentedButtons
-              value={usageFrequency}
-              onValueChange={setUsageFrequency}
-              buttons={[
-                {
-                  value: 'daily',
-                  label: l10n.feedback.usageFrequency.options.daily,
-                },
-                {
-                  value: 'weekly',
-                  label: l10n.feedback.usageFrequency.options.weekly,
-                },
-                {
-                  value: 'monthly',
-                  label: l10n.feedback.usageFrequency.options.monthly,
-                },
-                {
-                  value: 'rarely',
-                  label: l10n.feedback.usageFrequency.options.rarely,
-                },
-              ]}
-              style={styles.segmentedButtons}
-            />
-          </View>
-        </Sheet.ScrollView>
-        <Sheet.Actions>
-          <View style={styles.secondaryButtons}>
-            <Button mode="text" onPress={() => setShowFeedback(false)}>
-              {l10n.common.cancel}
-            </Button>
-          </View>
-          <Button
-            mode="contained"
-            onPress={handleSubmit}
-            loading={isSubmitting}
-            disabled={isSubmitting}>
-            {l10n.feedback.submit}
-          </Button>
-        </Sheet.Actions>
-      </Sheet>
     </SafeAreaView>
   );
 };

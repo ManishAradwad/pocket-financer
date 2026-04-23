@@ -44,10 +44,6 @@ export class UIStore {
 
   iOSBackgroundDownloading = true;
 
-  benchmarkShareDialog = {
-    shouldShow: true,
-  };
-
   // Warning state for chat-related warnings (like multimodal warnings)
   chatWarning: ErrorState | null = null;
 
@@ -77,7 +73,6 @@ export class UIStore {
         'colorScheme',
         'autoNavigatetoChat',
         'displayMemUsage',
-        'benchmarkShareDialog',
         '_language',
       ],
       storage: AsyncStorage,
@@ -140,11 +135,6 @@ export class UIStore {
     });
   }
 
-  setBenchmarkShareDialogPreference(shouldShow: boolean) {
-    runInAction(() => {
-      this.benchmarkShareDialog.shouldShow = shouldShow;
-    });
-  }
 }
 
 export const uiStore = new UIStore();

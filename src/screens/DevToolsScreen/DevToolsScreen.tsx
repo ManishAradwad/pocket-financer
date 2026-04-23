@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useState} from 'react';
 import {View, ScrollView, Alert} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {Card, Text, Button, IconButton} from 'react-native-paper';
@@ -10,6 +10,8 @@ import {useTheme} from '../../hooks';
 import {createStyles} from './styles';
 import {chatSessionRepository} from '../../repositories/ChatSessionRepository';
 import {TestCompletionScreen, DatabaseInspectorScreen} from './screens';
+import SmsService from '../../services/sms/SmsService';
+import {PipelineService} from '../../services/pipeline/PipelineService';
 
 // Define the stack navigator param list
 type DevToolsStackParamList = {
@@ -56,6 +58,41 @@ const DevToolsHomeScreen: React.FC = () => {
   const navigation = useNavigation();
   const theme = useTheme();
   const styles = createStyles(theme);
+
+  const [smsData, setSmsData] = useState<string>('No SMS data yet.');
+
+  const testSmsHistory = async () => {
+    try {
+      const hasPerms = await SmsService.requestPermissions();
+      if (!hasPerms) {
+        setSmsData('Permissions denied.');
+        return;
+      }
+      const history = await SmsService.fetchSmsHistory({limit: 5});
+      setSmsData(JSON.stringify(history, null, 2));
+    } catch (e: any) {
+      setSmsData(`Error fetching history: ${e.message}`);
+    }
+  };
+
+  const testSmsListener = async () => {
+    try {
+      const hasPerms = await SmsService.requestPermissions();
+      if (!hasPerms) {
+        setSmsData('Permissions denied.');
+        return;
+      }
+      setSmsData('Listening for new SMS...');
+      SmsService.startListening(sms => {
+        setSmsData(
+          prev => `NEW SMS RECEIVED:\n${JSON.stringify(sms, null, 2)}\n\n` + prev,
+        );
+        PipelineService.processSms(sms);
+      });
+    } catch (e: any) {
+      setSmsData(`Error starting listener: ${e.message}`);
+    }
+  };
 
   const resetMigration = async () => {
     try {
@@ -124,6 +161,40 @@ const DevToolsHomeScreen: React.FC = () => {
                 style={styles.button}>
                 Open Database Inspector
               </Button>
+            </View>
+          </Card.Content>
+        </Card>
+
+        {/* SMS Test Card */}
+        <Card elevation={1} style={styles.card}>
+          <Card.Title title="SMS Test" />
+          <Card.Content>
+            <Text variant="bodyMedium" style={styles.description}>
+              Read recent SMS history, start the background SMS listener, and
+              see incoming messages feed the extraction pipeline in real time.
+            </Text>
+            <View style={styles.buttonContainer}>
+              <Button
+                mode="contained"
+                onPress={testSmsHistory}
+                style={styles.button}>
+                Read Last 5 SMS (History)
+              </Button>
+              <Button
+                mode="outlined"
+                onPress={testSmsListener}
+                style={styles.button}>
+                Start SMS Listener
+              </Button>
+            </View>
+            <View
+              style={{
+                backgroundColor: theme.colors.surfaceVariant,
+                padding: 8,
+                marginTop: 8,
+                borderRadius: 8,
+              }}>
+              <Text>{smsData}</Text>
             </View>
           </Card.Content>
         </Card>
