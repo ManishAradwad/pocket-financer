@@ -14,13 +14,6 @@ export const createStyles = ({
     container: {
       flexDirection: 'column',
     },
-    palBtn: {
-      height: 28,
-      width: 28,
-      alignItems: 'center',
-      justifyContent: 'center',
-      borderRadius: 100,
-    },
     plusButton: {
       height: 28,
       width: 28,
@@ -59,7 +52,7 @@ export const createStyles = ({
     thinkingToggleTextDisabled: {
       // Dynamic color will be applied via theme
     },
-    palSelector: {
+    modelSelector: {
       flexDirection: 'row',
       alignItems: 'center',
       gap: 4,
@@ -141,23 +134,23 @@ export const createStyles = ({
       paddingVertical: 20,
       marginTop: isEditMode ? 28 : 0,
     },
-    palNameWrapper: {
+    modelNameWrapper: {
       ...fontStyles.regular,
       color: theme.colors.inverseOnSurface,
       fontSize: 12,
     },
-    palName: {
+    modelName: {
       fontSize: 12,
       color: theme.colors.inverseOnSurface,
       ...fontStyles.semibold,
     },
-    // New compact pal name styles for control bar
-    palNameCompact: {
+    // New compact model name styles for control bar
+    modelNameCompact: {
       fontSize: 10,
       ...fontStyles.regular,
       color: theme.colors.inverseOnSurface,
     },
-    palNameValueCompact: {
+    modelNameValueCompact: {
       fontSize: 10,
       ...fontStyles.semibold,
       color: theme.colors.inverseOnSurface,

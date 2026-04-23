@@ -20,10 +20,9 @@ const COLLECTIONS = [
   'messages',
   'completion_settings',
   'global_settings',
-  'local_pals',
-  'cached_pals',
-  'user_library',
   'sync_status',
+  'accounts',
+  'transactions',
 ];
 
 const DatabaseInspectorScreen = () => {
@@ -149,16 +148,7 @@ const DatabaseInspectorScreen = () => {
                       Session: {record.session_id}
                     </Text>
                   )}
-                  {record.palshub_id && (
-                    <Text style={styles.recordSessionId}>
-                      PalsHub ID: {record.palshub_id}
-                    </Text>
-                  )}
-                  {record.source && (
-                    <Text style={styles.recordSessionId}>
-                      Source: {record.source}
-                    </Text>
-                  )}
+
                 </TouchableOpacity>
               ))
             )}
@@ -216,27 +206,7 @@ const DatabaseInspectorScreen = () => {
       }
     }
 
-    // If this is a cached_pal, find related user_library entries
-    if (collection === 'cached_pals' && record.palshub_id) {
-      const userLibraryEntries = (collectionData.user_library || []).filter(
-        entry => entry.palshub_id === record.palshub_id,
-      );
 
-      if (userLibraryEntries.length > 0) {
-        relatedRecords.user_library = userLibraryEntries;
-      }
-    }
-
-    // If this is a user_library entry, find related cached_pal
-    if (collection === 'user_library' && record.palshub_id) {
-      const cachedPal = (collectionData.cached_pals || []).find(
-        pal => pal.palshub_id === record.palshub_id,
-      );
-
-      if (cachedPal) {
-        relatedRecords.cached_pals = [cachedPal];
-      }
-    }
 
     return relatedRecords;
   };

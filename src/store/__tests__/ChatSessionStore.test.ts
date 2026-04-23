@@ -422,7 +422,6 @@ describe('chatSessionStore', () => {
         'My New Session',
         [mockMessage],
         defaultCompletionSettings,
-        undefined,
       );
       expect(chatSessionRepository.getSessionById).toHaveBeenCalledWith(
         mockNewSession.id,
@@ -485,7 +484,6 @@ describe('chatSessionStore', () => {
         expect.any(String),
         [mockMessage],
         originalSession.completionSettings,
-        undefined,
       );
       expect(chatSessionStore.sessions.length).toBe(2);
       expect(chatSessionStore.sessions[1].completionSettings.temperature).toBe(
@@ -622,7 +620,6 @@ describe('chatSessionStore', () => {
         'Original Session - Copy',
         [mockMessage],
         originalSession.completionSettings,
-        undefined,
       );
       expect(chatSessionStore.sessions.length).toBe(2);
       expect(chatSessionStore.sessions[1].title).toBe(
@@ -843,7 +840,6 @@ describe('chatSessionStore', () => {
         'New Session',
         [],
         customSettings,
-        undefined,
       );
       expect(chatSessionStore.sessions[0].completionSettings).toEqual(
         customSettings,

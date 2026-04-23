@@ -17,8 +17,6 @@ import { observer } from 'mobx-react';
 import { IconButton, Text } from 'react-native-paper';
 
 import {
-  ChevronUpIcon,
-  VideoRecorderIcon,
   PlusIcon,
   AtomIcon,
 } from '../../assets/icons';
@@ -27,7 +25,7 @@ import { useTheme } from '../../hooks';
 
 import { createStyles } from './styles';
 
-import { chatSessionStore, modelStore, uiStore } from '../../store';
+import { chatSessionStore, modelStore } from '../../store';
 
 import { MessageType } from '../../utils/types';
 import { L10nContext, UserContext } from '../../utils';
@@ -316,10 +314,7 @@ export const ChatInput = observer(
     const isSendButtonEnabled = value.trim().length > 0 && hasActiveModel;
     const sendButtonOpacity = isSendButtonEnabled ? 1 : 0.4;
 
-    const rotateInterpolate = iconRotation.interpolate({
-      inputRange: [0, 1],
-      outputRange: ['0deg', '180deg'],
-    });
+
 
     const onSurfaceColor = theme.colors.text;
     const onSurfaceColorVariant = onSurfaceColor + '55'; // for disabled state or placeholder text

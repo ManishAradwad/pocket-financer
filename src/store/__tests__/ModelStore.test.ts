@@ -16,7 +16,6 @@ import {
 import * as RNFS from '@dr.pogodin/react-native-fs';
 
 import {modelStore, uiStore, serverStore} from '..';
-import {t} from '../../locales';
 import {
   getCpuCoreCount,
   getRecommendedThreadCount,
@@ -932,9 +931,10 @@ describe('ModelStore', () => {
       // Check that Alert.alert is called with the error message
       expect(alertSpy).toHaveBeenCalledWith(
         uiStore.l10n.errors.downloadSetupFailedTitle,
-        t(uiStore.l10n.errors.downloadSetupFailedMessage, {
-          message: 'Mock error',
-        }),
+        uiStore.l10n.errors.downloadSetupFailedMessage.replace(
+          '{message}',
+          'Mock error',
+        ),
       );
 
       // Clean up mocks

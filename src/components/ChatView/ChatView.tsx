@@ -205,9 +205,7 @@ export const ChatView = observer(
     const inputTextRef = React.useRef(inputText);
     inputTextRef.current = inputText;
     const [inputImages, setInputImages] = React.useState<string[]>([]);
-    const [_selectedModel, setSelectedModel] = React.useState<string | null>(
-      null,
-    );
+
 
     // Image viewer state
     const [isImageViewVisible, setIsImageViewVisible] = React.useState(false);
@@ -855,10 +853,7 @@ export const ChatView = observer(
       ],
     );
 
-    // ============ MODEL PICKER HANDLERS ============
-    const handleModelSelect = React.useCallback((model: string) => {
-      setSelectedModel(model);
-    }, []);
+
 
     // ============ COMPUTED VALUES ============
     const inputBackgroundColor = theme.colors.surface;

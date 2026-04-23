@@ -1,5 +1,4 @@
 import axios from 'axios';
-import { Platform } from 'react-native';
 import { urls } from '../config';
 import {
   checkConnectivity,
@@ -30,12 +29,7 @@ export async function submitBenchmark(
       );
     }
 
-    const storeName =
-      Platform.OS === 'android' ? 'Google Play Store' : 'Apple App Store';
-    let errMessage = `App verification failed. Benchmark sharing is only available for official builds from ${storeName}.`;
-
-    // Get App Check token
-    let appCheckToken: string | null = 'dummy-appcheck-token';    // Prepare data and submit to server
+    // Prepare data and submit to server
     const data: SubmissionData = {
       deviceInfo,
       benchmarkResult,
@@ -44,7 +38,6 @@ export async function submitBenchmark(
     try {
       const response = await axios.post(urls.benchmarkSubmit(), data, {
         headers: {
-          //'X-Firebase-AppCheck': appCheckToken,
           'Content-Type': 'application/json',
         },
         timeout: 10000,

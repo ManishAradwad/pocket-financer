@@ -235,10 +235,6 @@ export const useChatSession = (
       // Continue with chat even if keep awake fails
     }
 
-    const activeSession = chatSessionStore.sessions.find(
-      s => s.id === chatSessionStore.activeSessionId,
-    );
-
     const systemMessages = resolveSystemMessages({
       model: modelStore.activeModel,
     });

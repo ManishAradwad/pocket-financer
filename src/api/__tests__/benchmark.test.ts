@@ -94,7 +94,6 @@ describe('submitBenchmark', () => {
     uuid: 'test-uuid',
   };
 
-  const mockAppCheckToken = 'mock-app-check-token';
   const mockResponse = {
     data: {
       message: 'Success',
@@ -124,7 +123,6 @@ describe('submitBenchmark', () => {
       },
       {
         headers: {
-          'X-Firebase-AppCheck': mockAppCheckToken,
           'Content-Type': 'application/json',
         },
         timeout: 10000,

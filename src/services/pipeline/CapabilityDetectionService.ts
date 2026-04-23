@@ -1,6 +1,4 @@
 import { modelStore } from '../../store';
-import { hasEnoughMemory } from '../../hooks/useMemoryCheck';
-import { isHighEndDevice, getCpuCoreCount } from '../../utils/deviceCapabilities';
 import DeviceInfo from 'react-native-device-info';
 import { Alert } from 'react-native';
 
@@ -14,7 +12,6 @@ export class CapabilityDetectionService {
         try {
             const ram = await DeviceInfo.getTotalMemory();
             const ramGB = ram / 1000 / 1000 / 1000;
-            const cpuCores = await getCpuCoreCount();
 
             // Absolute minimum requirement: 2GB RAM. If less, we block.
             if (ramGB < 2.0) {

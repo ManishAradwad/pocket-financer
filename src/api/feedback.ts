@@ -1,4 +1,4 @@
-import { Platform } from 'react-native';
+
 
 import axios from 'axios';
 import DeviceInfo from 'react-native-device-info';
@@ -73,13 +73,6 @@ export async function submitContentReport(
       );
     }
 
-    const storeName =
-      Platform.OS === 'android' ? 'Google Play Store' : 'Apple App Store';
-    let errMessage = `App verification failed. Content reporting is only available for official builds from ${storeName}.`;
-
-    // Get App Check token
-    let appCheckToken: string | null = 'dummy-appcheck-token';
-
     try {
       const response = await axios.post(
         urls.feedbackSubmit(),
@@ -91,7 +84,6 @@ export async function submitContentReport(
         },
         {
           headers: {
-            'X-Firebase-AppCheck': appCheckToken,
             'Content-Type': 'application/json',
           },
           timeout: 10000,
@@ -144,13 +136,6 @@ export async function submitFeedback(
       );
     }
 
-    const storeName =
-      Platform.OS === 'android' ? 'Google Play Store' : 'Apple App Store';
-    let errMessage = `App verification failed. Feedback submission is only available for official builds from ${storeName}.`;
-
-    // Get App Check token
-    let appCheckToken: string | null = 'dummy-appcheck-token';
-
     try {
       const response = await axios.post(
         urls.feedbackSubmit(),
@@ -162,7 +147,6 @@ export async function submitFeedback(
         },
         {
           headers: {
-            'X-Firebase-AppCheck': appCheckToken,
             'Content-Type': 'application/json',
           },
           timeout: 10000,
@@ -228,13 +212,6 @@ export async function submitModelLoadErrorReport(
       );
     }
 
-    const storeName =
-      Platform.OS === 'android' ? 'Google Play Store' : 'Apple App Store';
-    const errMessage = `App verification failed. Error reporting is only available for official builds from ${storeName}.`;
-
-    // Get App Check token
-    let appCheckToken: string | null = 'dummy-appcheck-token';
-
     try {
       const response = await axios.post(
         urls.feedbackSubmit(),
@@ -246,7 +223,6 @@ export async function submitModelLoadErrorReport(
         },
         {
           headers: {
-            'X-Firebase-AppCheck': appCheckToken,
             'Content-Type': 'application/json',
           },
           timeout: 10000,

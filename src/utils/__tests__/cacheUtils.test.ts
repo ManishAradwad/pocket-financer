@@ -13,7 +13,6 @@ import {
   sessionCacheDirectoryExists,
   getSessionCacheInfo,
   clearAllSessionCaches,
-  clearSessionCacheForPal,
 } from '../cacheUtils';
 
 const mockRNFS = RNFS as jest.Mocked<typeof RNFS>;
@@ -169,58 +168,6 @@ describe('cacheUtils', () => {
 
       expect(result).toBe(1); // Only one successful deletion
       expect(mockRNFS.unlink).toHaveBeenCalledTimes(2);
-    });
-  });
-
-  describe('clearSessionCacheForPal', () => {
-    it('should delete both session and metadata files when they exist', async () => {
-      mockRNFS.exists.mockResolvedValue(true);
-      mockRNFS.unlink.mockResolvedValue(undefined);
-
-      const result = await clearSessionCacheForPal('test-pal-id');
-
-      expect(result).toBe(true);
-      expect(mockRNFS.exists).toHaveBeenCalledTimes(2);
-      expect(mockRNFS.exists).toHaveBeenCalledWith(
-        '/mock/caches/session-cache/test-pal-id.session',
-      );
-      expect(mockRNFS.exists).toHaveBeenCalledWith(
-        '/mock/caches/session-cache/test-pal-id_metadata.json',
-      );
-      expect(mockRNFS.unlink).toHaveBeenCalledTimes(2);
-    });
-
-    it('should return false when no files exist', async () => {
-      mockRNFS.exists.mockResolvedValue(false);
-
-      const result = await clearSessionCacheForPal('test-pal-id');
-
-      expect(result).toBe(false);
-      expect(mockRNFS.unlink).not.toHaveBeenCalled();
-    });
-
-    it('should delete only existing files', async () => {
-      mockRNFS.exists
-        .mockResolvedValueOnce(true) // session file exists
-        .mockResolvedValueOnce(false); // metadata file does not exist
-      mockRNFS.unlink.mockResolvedValue(undefined);
-
-      const result = await clearSessionCacheForPal('test-pal-id');
-
-      expect(result).toBe(true);
-      expect(mockRNFS.unlink).toHaveBeenCalledTimes(1);
-      expect(mockRNFS.unlink).toHaveBeenCalledWith(
-        '/mock/caches/session-cache/test-pal-id.session',
-      );
-    });
-
-    it('should throw error on deletion failure', async () => {
-      mockRNFS.exists.mockResolvedValue(true);
-      mockRNFS.unlink.mockRejectedValue(new Error('Delete failed'));
-
-      await expect(clearSessionCacheForPal('test-pal-id')).rejects.toThrow(
-        'Delete failed',
-      );
     });
   });
 });

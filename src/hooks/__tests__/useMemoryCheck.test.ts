@@ -71,7 +71,7 @@ describe('useMemoryCheck', () => {
     // Should have tight or wont_fit status with appropriate warnings
     expect(result.current.fitStatus).not.toBe('fits');
     expect(result.current.shortMemoryWarning).toBeTruthy();
-    expect(result.current.memoryWarning).toContain('needs');
+    expect(result.current.memoryWarning).toContain('Needed limit');
     expect(result.current.multimodalWarning).toBe('');
   });
 
@@ -174,7 +174,7 @@ describe('useMemoryCheck', () => {
     // Should show memory tight or low memory warning with detailed message
     expect(result2.current.fitStatus).not.toBe('fits');
     expect(result2.current.shortMemoryWarning).toBeTruthy();
-    expect(result2.current.memoryWarning).toContain('needs');
+    expect(result2.current.memoryWarning).toContain('Needed limit');
   });
 
   it('handles errors gracefully when DeviceInfo.getTotalMemory fails on cold start', async () => {
@@ -245,7 +245,7 @@ describe('useMemoryCheck', () => {
 
     // 2.4GB > 2GB available but < 8GB total → tight
     expect(result.current.fitStatus).toBe('tight');
-    expect(result.current.shortMemoryWarning).toBe(l10n.en.memory.memoryTight);
+    expect(result.current.shortMemoryWarning).toBe(l10n.en.memory.shortWarning);
   });
 
   it('returns lowMemory for wont_fit status', async () => {
@@ -270,6 +270,6 @@ describe('useMemoryCheck', () => {
 
     // 2.4GB > 2GB total → wont_fit
     expect(result.current.fitStatus).toBe('wont_fit');
-    expect(result.current.shortMemoryWarning).toBe(l10n.en.memory.lowMemory);
+    expect(result.current.shortMemoryWarning).toBe(l10n.en.memory.shortWarning);
   });
 });

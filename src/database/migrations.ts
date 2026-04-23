@@ -2,6 +2,7 @@ import {
   schemaMigrations,
   createTable,
   addColumns,
+  unsafeExecuteSql,
 } from '@nozbe/watermelondb/Schema/migrations';
 
 export default schemaMigrations({
@@ -145,6 +146,24 @@ export default schemaMigrations({
             { name: 'updated_at', type: 'number' },
           ],
         }),
+      ],
+    },
+    // Migration to version 7: Remove Pals-related tables (Pals feature removed)
+    {
+      toVersion: 7,
+      steps: [
+        unsafeExecuteSql(
+          'DROP TABLE IF EXISTS cached_pals;',
+        ),
+        unsafeExecuteSql(
+          'DROP TABLE IF EXISTS user_library;',
+        ),
+        unsafeExecuteSql(
+          'DROP TABLE IF EXISTS sync_status;',
+        ),
+        unsafeExecuteSql(
+          'DROP TABLE IF EXISTS local_pals;',
+        ),
       ],
     },
   ],

@@ -1,7 +1,6 @@
 export * from './AboutScreen';
 export * from './AssistantScreen';
 export * from './BenchmarkScreen';
-export * from './AssistantScreen';
 export * from './ModelsScreen';
 export * from './SettingsScreen';
 

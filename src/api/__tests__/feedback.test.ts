@@ -1,5 +1,4 @@
 import axios from 'axios';
-import { Platform } from 'react-native';
 import DeviceInfo from 'react-native-device-info';
 import { submitFeedback, submitContentReport } from '../feedback';
 import * as utils from '../../utils';
@@ -52,7 +51,6 @@ describe('submitFeedback', () => {
     usageFrequency: 'daily',
   };
 
-  const mockAppCheckToken = 'mock-app-check-token';
   const mockResponse = {
     data: {
       message: 'Feedback submitted successfully',
@@ -63,7 +61,6 @@ describe('submitFeedback', () => {
     jest.clearAllMocks();
 
     // Default mocks for success case
-    Platform.OS = 'ios';
     mockedUtils.checkConnectivity.mockResolvedValue(true);
 
     mockedDeviceInfo.getVersion.mockReturnValue('1.0.0');
@@ -90,7 +87,6 @@ describe('submitFeedback', () => {
       },
       {
         headers: {
-          'X-Firebase-AppCheck': mockAppCheckToken,
           'Content-Type': 'application/json',
         },
         timeout: 10000,
@@ -198,7 +194,7 @@ describe('submitFeedback', () => {
     mockedAxios.isAxiosError.mockReturnValue(false);
 
     await expect(submitFeedback(mockFeedbackData)).rejects.toThrow(
-      'App verification failed. Feedback submission is only available for official builds from Apple App Store.',
+      'Failed to submit feedback: Unknown error',
     );
   });
 
@@ -215,7 +211,6 @@ describe('submitContentReport', () => {
     isContentReport: true as const,
   };
 
-  const mockAppCheckToken = 'mock-app-check-token';
   const mockResponse = {
     data: {
       message: 'Content report submitted successfully',
@@ -226,7 +221,6 @@ describe('submitContentReport', () => {
     jest.clearAllMocks();
 
     // Default mocks for success case
-    Platform.OS = 'ios';
     mockedUtils.checkConnectivity.mockResolvedValue(true);
 
     mockedDeviceInfo.getVersion.mockReturnValue('1.0.0');
@@ -253,7 +247,6 @@ describe('submitContentReport', () => {
       },
       {
         headers: {
-          'X-Firebase-AppCheck': mockAppCheckToken,
           'Content-Type': 'application/json',
         },
         timeout: 10000,

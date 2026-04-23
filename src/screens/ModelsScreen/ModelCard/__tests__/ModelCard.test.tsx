@@ -57,12 +57,11 @@ describe('ModelCard', () => {
     );
 
     // If the model is downloaded and the device is low on memory, the warning should be displayed.
-    // Now uses memoryTight or lowMemory instead of shortWarning
+    // Hook now uses shortWarning for both tight and wont_fit statuses
     await waitFor(() => {
-      // Should show either "Memory tight" or "Low memory" warning
-      const hasTightWarning = queryByText(l10n.en.memory.memoryTight);
-      const hasLowMemoryWarning = queryByText(l10n.en.memory.lowMemory);
-      expect(hasTightWarning || hasLowMemoryWarning).toBeTruthy();
+      // Should show "Memory Warning" text (from l10n.memory.shortWarning)
+      const hasWarning = queryByText(l10n.en.memory.shortWarning);
+      expect(hasWarning).toBeTruthy();
       expect(queryByTestId('memory-warning-snackbar')).toBeNull();
     });
 

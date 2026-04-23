@@ -1,5 +1,5 @@
 import { Model } from '@nozbe/watermelondb';
-import { field, text, readonly, date } from '@nozbe/watermelondb/decorators';
+import { text, readonly, date } from '@nozbe/watermelondb/decorators';
 import { Associations } from '@nozbe/watermelondb/Model';
 
 export default class Account extends Model {
