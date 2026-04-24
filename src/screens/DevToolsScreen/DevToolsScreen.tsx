@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {View, ScrollView, Alert} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {Card, Text, Button, IconButton} from 'react-native-paper';
@@ -11,7 +11,20 @@ import {createStyles} from './styles';
 import {chatSessionRepository} from '../../repositories/ChatSessionRepository';
 import {TestCompletionScreen, DatabaseInspectorScreen} from './screens';
 import SmsService from '../../services/sms/SmsService';
-import {PipelineService} from '../../services/pipeline/PipelineService';
+import {PipelineService, PipelineStep} from '../../services/pipeline/PipelineService';
+
+const MAX_PIPELINE_LOG_ENTRIES = 40;
+
+function formatPipelineStep(step: PipelineStep): string {
+  const ts = new Date(step.at).toLocaleTimeString();
+  const header = `[${ts}] ${step.stage}: ${step.message}`;
+  if (step.data === undefined) return header;
+  try {
+    return `${header}\n${JSON.stringify(step.data, null, 2)}`;
+  } catch {
+    return `${header}\n${String(step.data)}`;
+  }
+}
 
 // Define the stack navigator param list
 type DevToolsStackParamList = {
@@ -60,6 +73,16 @@ const DevToolsHomeScreen: React.FC = () => {
   const styles = createStyles(theme);
 
   const [smsData, setSmsData] = useState<string>('No SMS data yet.');
+  const [pipelineLog, setPipelineLog] = useState<PipelineStep[]>([]);
+
+  useEffect(() => {
+    const unsubscribe = PipelineService.subscribeDebug(step => {
+      setPipelineLog(prev => [step, ...prev].slice(0, MAX_PIPELINE_LOG_ENTRIES));
+    });
+    return unsubscribe;
+  }, []);
+
+  const clearPipelineLog = () => setPipelineLog([]);
 
   const testSmsHistory = async () => {
     try {
@@ -170,8 +193,9 @@ const DevToolsHomeScreen: React.FC = () => {
           <Card.Title title="SMS Test" />
           <Card.Content>
             <Text variant="bodyMedium" style={styles.description}>
-              Read recent SMS history, start the background SMS listener, and
-              see incoming messages feed the extraction pipeline in real time.
+              Read recent SMS history or start the background SMS listener.
+              Incoming messages are fed to the extraction pipeline; per-stage
+              progress is shown in the "Pipeline Log" card below.
             </Text>
             <View style={styles.buttonContainer}>
               <Button
@@ -195,6 +219,46 @@ const DevToolsHomeScreen: React.FC = () => {
                 borderRadius: 8,
               }}>
               <Text>{smsData}</Text>
+            </View>
+          </Card.Content>
+        </Card>
+
+        {/* Pipeline Log Card */}
+        <Card elevation={1} style={styles.card}>
+          <Card.Title title="Pipeline Log" />
+          <Card.Content>
+            <Text variant="bodyMedium" style={styles.description}>
+              Live per-stage trace of the SMS → SLM → transaction pipeline.
+              Newest events are on top. Last {MAX_PIPELINE_LOG_ENTRIES} entries
+              are kept.
+            </Text>
+            <View style={styles.buttonContainer}>
+              <Button
+                mode="outlined"
+                onPress={clearPipelineLog}
+                style={styles.button}>
+                Clear Log
+              </Button>
+            </View>
+            <View
+              style={{
+                backgroundColor: theme.colors.surfaceVariant,
+                padding: 8,
+                marginTop: 8,
+                borderRadius: 8,
+              }}>
+              {pipelineLog.length === 0 ? (
+                <Text>No pipeline events yet.</Text>
+              ) : (
+                pipelineLog.map((step, idx) => (
+                  <Text
+                    key={`${step.at}-${idx}`}
+                    selectable
+                    style={{marginBottom: 8, fontFamily: 'monospace'}}>
+                    {formatPipelineStep(step)}
+                  </Text>
+                ))
+              )}
             </View>
           </Card.Content>
         </Card>

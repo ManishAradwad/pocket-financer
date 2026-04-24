@@ -17,9 +17,45 @@ type ExtractedTransaction = {
     account: string | null;
 };
 
+export type PipelineStage =
+    | 'enqueue'
+    | 'enqueue:dropped'
+    | 'classify:start'
+    | 'classify:done'
+    | 'classify:skip'
+    | 'extract:start'
+    | 'extract:done'
+    | 'extract:empty'
+    | 'save:start'
+    | 'save:done'
+    | 'save:invalid'
+    | 'error';
+
+export type PipelineStep = {
+    stage: PipelineStage;
+    message: string;
+    data?: unknown;
+    at: number;
+};
+
+type StepListener = (step: PipelineStep) => void;
+
 export class PipelineService {
     private static isProcessingSms = false;
     private static smsQueue: SmsMessage[] = [];
+    private static debugListeners = new Set<StepListener>();
+
+    /**
+     * Subscribe to per-stage pipeline events (for DevTools visibility).
+     * Listeners receive the classifier output, the extracted JSON, and save
+     * results in real time. Returns an unsubscribe function.
+     */
+    static subscribeDebug(listener: StepListener): () => void {
+        this.debugListeners.add(listener);
+        return () => {
+            this.debugListeners.delete(listener);
+        };
+    }
 
     /**
      * Processes an incoming SMS message.
@@ -29,20 +65,24 @@ export class PipelineService {
         if (!sms?.body) return;
 
         if (this.smsQueue.length >= MAX_QUEUE_LEN) {
-            console.warn(
-                `PipelineService: queue full (${MAX_QUEUE_LEN}), dropping SMS to preserve responsiveness.`,
-            );
+            this.emit({
+                stage: 'enqueue:dropped',
+                message: `queue full (${MAX_QUEUE_LEN}), dropped`,
+            });
             return;
         }
 
         this.smsQueue.push(sms);
+        this.emit({
+            stage: 'enqueue',
+            message: 'queued',
+            data: { address: sms.address, body: sms.body, date: sms.date },
+        });
         this.processQueue();
     }
 
     private static async processQueue(): Promise<void> {
-        if (this.isProcessingSms || this.smsQueue.length === 0) {
-            return;
-        }
+        if (this.isProcessingSms || this.smsQueue.length === 0) return;
 
         this.isProcessingSms = true;
 
@@ -53,7 +93,11 @@ export class PipelineService {
             try {
                 await this.processSingleSms(current);
             } catch (e) {
-                console.error('PipelineService: Error in sequential SMS processing:', e);
+                this.emit({
+                    stage: 'error',
+                    message: 'unhandled error in sequential processing',
+                    data: String(e),
+                });
             }
         }
 
@@ -62,22 +106,42 @@ export class PipelineService {
 
     private static async processSingleSms(sms: SmsMessage): Promise<void> {
         if (!modelStore.context) {
-            console.warn('PipelineService: LLM Context not initialized. Cannot process SMS.');
+            this.emit({
+                stage: 'error',
+                message: 'LLM context not initialized, skipping SMS',
+            });
             return;
         }
 
         try {
             const isFinancial = await this.classifySms(sms.body);
-            if (!isFinancial) return;
+            if (!isFinancial) {
+                this.emit({ stage: 'classify:skip', message: 'not financial, skipping' });
+                return;
+            }
 
+            this.emit({ stage: 'extract:start', message: 'running extractor' });
             const extracted = await this.extractTransaction(sms.body);
-            if (!extracted) return;
+            if (!extracted) {
+                this.emit({
+                    stage: 'extract:empty',
+                    message: 'extractor returned no parseable JSON',
+                });
+                return;
+            }
+            this.emit({
+                stage: 'extract:done',
+                message: 'extractor produced JSON',
+                data: extracted,
+            });
 
             const amount = coerceAmount(extracted.amount);
             if (amount === null) {
-                if (__DEV__) {
-                    console.warn('PipelineService: dropping transaction with invalid amount');
-                }
+                this.emit({
+                    stage: 'save:invalid',
+                    message: 'invalid amount, not saving',
+                    data: extracted.amount,
+                });
                 return;
             }
 
@@ -85,7 +149,8 @@ export class PipelineService {
             const accountId = await resolveAccountId(extracted.account);
             const date = coerceDate(extracted.date, sms.date);
 
-            await transactionStore.addTransaction({
+            this.emit({ stage: 'save:start', message: 'writing transaction' });
+            const tx = await transactionStore.addTransaction({
                 amount,
                 merchant: extracted.merchant?.trim() || 'Unknown Merchant',
                 date,
@@ -93,18 +158,31 @@ export class PipelineService {
                 accountId,
                 rawMessage: sms.body,
             });
-
-            if (__DEV__) {
-                console.log('PipelineService: saved transaction');
-            }
+            this.emit({
+                stage: 'save:done',
+                message: 'transaction saved',
+                data: {
+                    id: tx?.id,
+                    amount,
+                    merchant: extracted.merchant,
+                    type,
+                    date,
+                    accountId,
+                },
+            });
         } catch (e) {
-            console.error('PipelineService: Error processing SMS', e);
+            this.emit({
+                stage: 'error',
+                message: 'error processing SMS',
+                data: String(e),
+            });
         }
     }
 
     private static async classifySms(smsText: string): Promise<boolean> {
         const prompt = renderPrompt(CLASSIFIER_PROMPT, smsText);
 
+        this.emit({ stage: 'classify:start', message: 'running classifier' });
         try {
             const result = await withTimeout(
                 modelStore.context!.completion({
@@ -115,9 +193,19 @@ export class PipelineService {
                 CLASSIFIER_TIMEOUT_MS,
                 'classifier',
             );
-            return result.text.trim().toUpperCase().includes('YES');
+            const isFinancial = result.text.trim().toUpperCase().includes('YES');
+            this.emit({
+                stage: 'classify:done',
+                message: isFinancial ? 'YES (financial)' : 'NO (not financial)',
+                data: result.text,
+            });
+            return isFinancial;
         } catch (e) {
-            console.error('PipelineService: classification error:', e);
+            this.emit({
+                stage: 'error',
+                message: 'classification error',
+                data: String(e),
+            });
             return false;
         }
     }
@@ -140,9 +228,35 @@ export class PipelineService {
             );
             return parseJsonObject(result.text);
         } catch (e) {
-            console.error('PipelineService: extraction error:', e);
+            this.emit({
+                stage: 'error',
+                message: 'extraction error',
+                data: String(e),
+            });
             return null;
         }
+    }
+
+    /**
+     * Fans a pipeline step out to DevTools listeners and, in __DEV__ only,
+     * to the console. Production builds never see SMS-derived PII in logcat.
+     */
+    private static emit(step: Omit<PipelineStep, 'at'>): void {
+        const full: PipelineStep = { ...step, at: Date.now() };
+        if (__DEV__) {
+            if (full.data !== undefined) {
+                console.log(`PipelineService[${full.stage}] ${full.message}`, full.data);
+            } else {
+                console.log(`PipelineService[${full.stage}] ${full.message}`);
+            }
+        }
+        this.debugListeners.forEach(listener => {
+            try {
+                listener(full);
+            } catch {
+                /* listener errors must not affect the pipeline */
+            }
+        });
     }
 }
 
