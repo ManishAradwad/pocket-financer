@@ -12,7 +12,6 @@ interface ErrorSnackbarProps {
   onDismiss: () => void;
   onRetry?: () => void;
   onSettings?: () => void;
-  onReport?: () => void;
 }
 
 export const ErrorSnackbar: React.FC<ErrorSnackbarProps> = ({
@@ -20,7 +19,6 @@ export const ErrorSnackbar: React.FC<ErrorSnackbarProps> = ({
   onDismiss,
   onRetry,
   onSettings,
-  onReport,
 }) => {
   const theme = useTheme();
 
@@ -71,15 +69,6 @@ export const ErrorSnackbar: React.FC<ErrorSnackbarProps> = ({
       return {
         label,
         onPress: onSettings,
-        labelStyle: {color: theme.colors.secondary},
-      };
-    }
-
-    // For model init errors, show report option
-    if (error.context === 'modelInit' && onReport) {
-      return {
-        label: 'Report',
-        onPress: onReport,
         labelStyle: {color: theme.colors.secondary},
       };
     }

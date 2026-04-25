@@ -95,3 +95,10 @@ sms.db
 # E2E pipeline
 e2e/devices.json
 e2e/reports/
+
+# Local dev artifacts / logs (should never be committed — may contain device PII)
+logcat*.txt
+build_log*.txt
+tsc_output*.txt
+ts_errors*.txt
+walkthrough.md.resolved

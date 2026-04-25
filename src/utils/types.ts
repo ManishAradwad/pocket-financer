@@ -487,14 +487,6 @@ export interface GGUFSpecs {
     eos_token?: string;
   };
 }
-export type BenchmarkConfig = {
-  pp: number;
-  tg: number;
-  pl: number;
-  nr: number;
-  label: string;
-};
-
 // Define which fields we always want to be required in ContextInitParams
 type RequiredContextFields =
   | 'n_ctx'
@@ -577,32 +569,6 @@ export interface LegacyContextInitParams {
   // Legacy property for migration (renamed to n_ctx)
   n_context?: number;
   no_gpu_devices?: boolean;
-}
-
-export interface BenchmarkResult {
-  config: BenchmarkConfig;
-  modelDesc: string;
-  modelSize: number;
-  modelNParams: number;
-  ppAvg: number;
-  ppStd: number;
-  tgAvg: number;
-  tgStd: number;
-  timestamp: string;
-  modelId: string;
-  modelName: string;
-  oid?: string;
-  rfilename?: string;
-  filename?: string;
-  peakMemoryUsage?: {
-    total: number;
-    used: number;
-    percentage: number;
-  };
-  wallTimeMs?: number;
-  uuid: string;
-  submitted?: boolean;
-  initSettings?: ContextInitParams | LegacyContextInitParams;
 }
 
 export type DeviceInfo = {

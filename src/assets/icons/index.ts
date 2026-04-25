@@ -1,7 +1,6 @@
 export {default as AlertIcon} from './alert.svg';
 export {default as AppInfoIcon} from './app-info.svg';
 export {default as AtomIcon} from './atom.svg';
-export {default as BenchmarkIcon} from './benchmark.svg';
 export {default as CameraIcon} from './camera.svg';
 export {default as ChatIcon} from './chat.svg';
 export {default as CheckCircleIcon} from './check-circle.svg';
