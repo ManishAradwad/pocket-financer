@@ -6,7 +6,7 @@ export class CapabilityDetectionService {
      * Enforces the minimum device RAM requirement on app launch.
      * Returns true if the app can proceed, false if the device is blocked.
      */
-    static async checkAndSelectModel(): Promise<boolean> {
+    static async checkDeviceSupport(): Promise<boolean> {
         try {
             const ram = await DeviceInfo.getTotalMemory();
             const ramGB = ram / 1000 / 1000 / 1000;

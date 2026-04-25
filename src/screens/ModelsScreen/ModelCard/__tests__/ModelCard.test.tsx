@@ -174,6 +174,7 @@ describe('ModelCard', () => {
   it('handles model offload', async () => {
     // Offload button only appears when weights are actually loaded —
     // i.e. activeModelId matches AND a completion engine exists.
+    const previousEngine = modelStore.engine;
     modelStore.engine = {} as any;
     try {
       const {getByTestId} = customRender(
@@ -188,7 +189,25 @@ describe('ModelCard', () => {
 
       expect(modelStore.manualReleaseContext).toHaveBeenCalled();
     } finally {
-      modelStore.engine = undefined;
+      modelStore.engine = previousEngine;
+    }
+  });
+
+  it('shows load button when activeModelId matches but no engine is loaded', async () => {
+    // Regression guard: activeModelId alone must not flip the card to
+    // "loaded" state. Without an engine, the model isn't actually in
+    // memory and the user must be offered the load action.
+    const previousEngine = modelStore.engine;
+    modelStore.engine = undefined;
+    try {
+      const {getByTestId, queryByTestId} = customRender(
+        <ModelCard model={downloadedModel} activeModelId={downloadedModel.id} />,
+      );
+
+      expect(getByTestId('load-button')).toBeTruthy();
+      expect(queryByTestId('offload-button')).toBeNull();
+    } finally {
+      modelStore.engine = previousEngine;
     }
   });
 
