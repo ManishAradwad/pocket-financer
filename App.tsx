@@ -68,7 +68,7 @@ const App = observer(() => {
     initLocale(uiStore.language as AvailableLanguage);
 
     // Check device capabilities
-    CapabilityDetectionService.checkAndSelectModel().then((supported) => {
+    CapabilityDetectionService.checkDeviceSupport().then((supported) => {
       setIsSupported(supported);
       if (supported) {
         // Start processing background SMS if permissions are granted

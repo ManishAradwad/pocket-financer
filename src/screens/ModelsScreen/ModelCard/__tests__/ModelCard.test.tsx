@@ -172,17 +172,43 @@ describe('ModelCard', () => {
   });
 
   it('handles model offload', async () => {
-    const {getByTestId} = customRender(
-      <ModelCard model={downloadedModel} activeModelId={downloadedModel.id} />,
-    );
+    // Offload button only appears when weights are actually loaded —
+    // i.e. activeModelId matches AND a completion engine exists.
+    const previousEngine = modelStore.engine;
+    modelStore.engine = {} as any;
+    try {
+      const {getByTestId} = customRender(
+        <ModelCard model={downloadedModel} activeModelId={downloadedModel.id} />,
+      );
 
-    expect(getByTestId('offload-button')).toBeTruthy();
+      expect(getByTestId('offload-button')).toBeTruthy();
 
-    act(() => {
-      fireEvent.press(getByTestId('offload-button'));
-    });
+      act(() => {
+        fireEvent.press(getByTestId('offload-button'));
+      });
 
-    expect(modelStore.manualReleaseContext).toHaveBeenCalled();
+      expect(modelStore.manualReleaseContext).toHaveBeenCalled();
+    } finally {
+      modelStore.engine = previousEngine;
+    }
+  });
+
+  it('shows load button when activeModelId matches but no engine is loaded', async () => {
+    // Regression guard: activeModelId alone must not flip the card to
+    // "loaded" state. Without an engine, the model isn't actually in
+    // memory and the user must be offered the load action.
+    const previousEngine = modelStore.engine;
+    modelStore.engine = undefined;
+    try {
+      const {getByTestId, queryByTestId} = customRender(
+        <ModelCard model={downloadedModel} activeModelId={downloadedModel.id} />,
+      );
+
+      expect(getByTestId('load-button')).toBeTruthy();
+      expect(queryByTestId('offload-button')).toBeNull();
+    } finally {
+      modelStore.engine = previousEngine;
+    }
   });
 
   // Add tests for delete functionality
