@@ -192,11 +192,15 @@ export class PipelineService {
                 }),
                 CLASSIFIER_TIMEOUT_MS,
                 'classifier',
+                () => modelStore.context?.stopCompletion(),
             );
-            const isFinancial = result.text.trim().toUpperCase().includes('YES');
+            // Strict equality: a substring check would let "YES, this is..." or
+            // an echoed prompt through. The prompt asks for exactly YES or NO.
+            const normalized = result.text.trim().toUpperCase();
+            const isFinancial = normalized === 'YES';
             this.emit({
                 stage: 'classify:done',
-                message: isFinancial ? 'YES (financial)' : 'NO (not financial)',
+                message: isFinancial ? 'YES (financial)' : `NO (not financial)`,
                 data: result.text,
             });
             return isFinancial;
@@ -225,6 +229,7 @@ export class PipelineService {
                 }),
                 EXTRACTOR_TIMEOUT_MS,
                 'extractor',
+                () => modelStore.context?.stopCompletion(),
             );
             return parseJsonObject(result.text);
         } catch (e) {
@@ -260,18 +265,44 @@ export class PipelineService {
     }
 }
 
-function withTimeout<T>(promise: Promise<T>, ms: number, label: string): Promise<T> {
+/**
+ * Race a promise against a deadline. On timeout we (1) call `onTimeout`
+ * (typically `context.stopCompletion()`) so the native engine actually
+ * aborts, then (2) await the original promise's settlement before rejecting.
+ * Without step 2 the queue would launch the next completion while the
+ * previous native call is still winding down — exactly the concurrent-LLM
+ * crash mode we're trying to avoid.
+ */
+function withTimeout<T>(
+    promise: Promise<T>,
+    ms: number,
+    label: string,
+    onTimeout?: () => void | Promise<void>,
+): Promise<T> {
     return new Promise<T>((resolve, reject) => {
-        const timer = setTimeout(
-            () => reject(new Error(`PipelineService: ${label} timed out after ${ms}ms`)),
-            ms,
-        );
+        let timedOut = false;
+        const timer = setTimeout(async () => {
+            timedOut = true;
+            try {
+                await onTimeout?.();
+            } catch {
+                /* best-effort abort */
+            }
+            try {
+                await promise;
+            } catch {
+                /* swallow — caller already considers this a timeout */
+            }
+            reject(new Error(`PipelineService: ${label} timed out after ${ms}ms`));
+        }, ms);
         promise.then(
             v => {
+                if (timedOut) return;
                 clearTimeout(timer);
                 resolve(v);
             },
             e => {
+                if (timedOut) return;
                 clearTimeout(timer);
                 reject(e);
             },
@@ -326,8 +357,17 @@ function coerceDate(raw: string | null, smsDate: number): number {
             const month = Number(match[2]) - 1;
             let year = Number(match[3]);
             if (year < 100) year += 2000;
-            const parsed = new Date(year, month, day).getTime();
-            if (Number.isFinite(parsed)) return parsed;
+            const d = new Date(year, month, day);
+            // Round-trip check: JS silently normalises invalid dates
+            // (e.g. 31/02/2025 -> 03/03/2025), so confirm the constructed
+            // date actually has the components we asked for.
+            if (
+                d.getFullYear() === year &&
+                d.getMonth() === month &&
+                d.getDate() === day
+            ) {
+                return d.getTime();
+            }
         }
     }
     if (Number.isFinite(smsDate) && smsDate > 0) return smsDate;

@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {View, ScrollView, Alert} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {Card, Text, Button, IconButton} from 'react-native-paper';
@@ -75,11 +75,36 @@ const DevToolsHomeScreen: React.FC = () => {
   const [smsData, setSmsData] = useState<string>('No SMS data yet.');
   const [pipelineLog, setPipelineLog] = useState<PipelineStep[]>([]);
 
+  // Track mount state so async callbacks don't update state after unmount.
+  const mountedRef = useRef(true);
+  // Holds the unsubscribe handle for the DevTools-installed SMS listener
+  // (the one that also pushes raw SMS into setSmsData).
+  const devListenerUnsubRef = useRef<(() => void) | null>(null);
+
   useEffect(() => {
-    const unsubscribe = PipelineService.subscribeDebug(step => {
+    const unsubscribeDebug = PipelineService.subscribeDebug(step => {
+      if (!mountedRef.current) return;
       setPipelineLog(prev => [step, ...prev].slice(0, MAX_PIPELINE_LOG_ENTRIES));
     });
-    return unsubscribe;
+    return () => {
+      mountedRef.current = false;
+      unsubscribeDebug();
+      // If we replaced the global SMS listener with our DevTools one,
+      // tear it down and reinstall a pipeline-only listener so background
+      // SMS processing keeps working after the user leaves DevTools.
+      const devUnsub = devListenerUnsubRef.current;
+      if (devUnsub) {
+        devUnsub();
+        devListenerUnsubRef.current = null;
+        SmsService.hasPermissions().then(has => {
+          if (has) {
+            SmsService.startListening(sms => {
+              PipelineService.processSms(sms);
+            });
+          }
+        });
+      }
+    };
   }, []);
 
   const clearPipelineLog = () => setPipelineLog([]);
@@ -88,13 +113,13 @@ const DevToolsHomeScreen: React.FC = () => {
     try {
       const hasPerms = await SmsService.requestPermissions();
       if (!hasPerms) {
-        setSmsData('Permissions denied.');
+        if (mountedRef.current) setSmsData('Permissions denied.');
         return;
       }
       const history = await SmsService.fetchSmsHistory({limit: 5});
-      setSmsData(JSON.stringify(history, null, 2));
+      if (mountedRef.current) setSmsData(JSON.stringify(history, null, 2));
     } catch (e: any) {
-      setSmsData(`Error fetching history: ${e.message}`);
+      if (mountedRef.current) setSmsData(`Error fetching history: ${e.message}`);
     }
   };
 
@@ -102,18 +127,22 @@ const DevToolsHomeScreen: React.FC = () => {
     try {
       const hasPerms = await SmsService.requestPermissions();
       if (!hasPerms) {
-        setSmsData('Permissions denied.');
+        if (mountedRef.current) setSmsData('Permissions denied.');
         return;
       }
-      setSmsData('Listening for new SMS...');
-      SmsService.startListening(sms => {
-        setSmsData(
-          prev => `NEW SMS RECEIVED:\n${JSON.stringify(sms, null, 2)}\n\n` + prev,
-        );
+      if (mountedRef.current) setSmsData('Listening for new SMS...');
+      // Drop any prior DevTools listener before installing a fresh one.
+      devListenerUnsubRef.current?.();
+      devListenerUnsubRef.current = SmsService.startListening(sms => {
+        if (mountedRef.current) {
+          setSmsData(
+            prev => `NEW SMS RECEIVED:\n${JSON.stringify(sms, null, 2)}\n\n` + prev,
+          );
+        }
         PipelineService.processSms(sms);
       });
     } catch (e: any) {
-      setSmsData(`Error starting listener: ${e.message}`);
+      if (mountedRef.current) setSmsData(`Error starting listener: ${e.message}`);
     }
   };
 

@@ -121,13 +121,18 @@ export class TransactionStore {
                 DEFAULT_ACCOUNT_NAME,
                 DEFAULT_ACCOUNT_BANK,
                 DEFAULT_ACCOUNT_TYPE,
-            ).then(acc => {
-                if (!acc) {
+            )
+                .then(acc => {
+                    if (!acc) {
+                        throw new Error('Failed to create default account');
+                    }
+                    return acc;
+                })
+                .catch(err => {
+                    // Don't keep a poisoned promise: clear so the next caller can retry.
                     this.defaultAccountPromise = null;
-                    throw new Error('Failed to create default account');
-                }
-                return acc;
-            });
+                    throw err;
+                });
         }
         return this.defaultAccountPromise;
     }
