@@ -172,17 +172,24 @@ describe('ModelCard', () => {
   });
 
   it('handles model offload', async () => {
-    const {getByTestId} = customRender(
-      <ModelCard model={downloadedModel} activeModelId={downloadedModel.id} />,
-    );
+    // Offload button only appears when weights are actually loaded —
+    // i.e. activeModelId matches AND a completion engine exists.
+    modelStore.engine = {} as any;
+    try {
+      const {getByTestId} = customRender(
+        <ModelCard model={downloadedModel} activeModelId={downloadedModel.id} />,
+      );
 
-    expect(getByTestId('offload-button')).toBeTruthy();
+      expect(getByTestId('offload-button')).toBeTruthy();
 
-    act(() => {
-      fireEvent.press(getByTestId('offload-button'));
-    });
+      act(() => {
+        fireEvent.press(getByTestId('offload-button'));
+      });
 
-    expect(modelStore.manualReleaseContext).toHaveBeenCalled();
+      expect(modelStore.manualReleaseContext).toHaveBeenCalled();
+    } finally {
+      modelStore.engine = undefined;
+    }
   });
 
   // Add tests for delete functionality

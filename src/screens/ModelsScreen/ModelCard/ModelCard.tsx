@@ -118,7 +118,7 @@ export const ModelCard: React.FC<ModelCardProps> = observer(
       },
     );
 
-    const isActiveModel = activeModelId === model.id;
+    const isActiveModel = activeModelId === model.id && !!modelStore.engine;
     const isDownloaded = model.isDownloaded;
     const isDownloading = modelStore.isDownloading(model.id);
     const isHfModel = model.origin === ModelOrigin.HF;
