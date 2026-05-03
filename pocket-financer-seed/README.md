@@ -78,6 +78,7 @@ Full design prototype: `Prototype.html` (in the pf folder, rendered as an intera
 | `src/database/schema.ts` | 36 | DB schema v1: accounts + transactions tables only (PocketPal tables removed) |
 | `src/database/index.ts` | 19 | Database adapter setup (WatermelonDB + SQLite, JSI enabled) |
 | `src/utils/deviceCapabilities.ts` | 118 | GPU detection: Adreno + i8mm + dotprod check. iOS 18+ Metal check. Simulator rejection. |
+| `src/utils/safeAlert.ts` | 29 | Wraps Alert.alert with a 100ms delay on Android to prevent "not attached to Activity" crashes during startup. |
 
 ### TIER 2 — Modified (adapted for the new app)
 

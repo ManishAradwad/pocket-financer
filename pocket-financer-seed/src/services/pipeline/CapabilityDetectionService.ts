@@ -1,7 +1,7 @@
 import {modelService} from '../model/ModelService';
 import {checkGpuSupport} from '../../utils/deviceCapabilities';
 import DeviceInfo from 'react-native-device-info';
-import {Alert} from 'react-native';
+import {safeAlert} from '../../utils/safeAlert';
 
 export class CapabilityDetectionService {
   /**
@@ -23,7 +23,7 @@ export class CapabilityDetectionService {
 
       // Absolute minimum: 2GB RAM
       if (ramGB < 2.0) {
-        Alert.alert(
+        safeAlert(
           'Device Not Supported',
           'Pocket Financer requires at least 2GB of RAM to process your SMS securely on-device.',
           [{text: 'OK'}],
