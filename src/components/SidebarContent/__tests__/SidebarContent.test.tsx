@@ -2,16 +2,16 @@ import React from 'react';
 import {Text} from 'react-native';
 import {runInAction} from 'mobx';
 
-import { NavigationContainer } from '@react-navigation/native';
+import {NavigationContainer} from '@react-navigation/native';
 import {
   createDrawerNavigator,
   DrawerContentComponentProps,
 } from '@react-navigation/drawer';
-import { render, fireEvent, waitFor } from '@testing-library/react-native';
+import {render, fireEvent, waitFor} from '@testing-library/react-native';
 
-import { SidebarContent } from '../SidebarContent';
+import {SidebarContent} from '../SidebarContent';
 
-import { chatSessionStore } from '../../../store';
+import {chatSessionStore} from '../../../store';
 
 const AssistantScreen = () => <Text>Chat Screen</Text>;
 const ModelsScreen = () => <Text>Models Screen</Text>;
@@ -42,7 +42,7 @@ describe('SidebarContent Component', () => {
   });
 
   it('renders session groups and items correctly', () => {
-    const { getByText } = render(<TestNavigator />);
+    const {getByText} = render(<TestNavigator />);
 
     expect(getByText('Today')).toBeTruthy();
     expect(getByText('Yesterday')).toBeTruthy();
@@ -52,7 +52,7 @@ describe('SidebarContent Component', () => {
   });
 
   it('navigates to Chat screen when a session is pressed', async () => {
-    const { getByText, queryByText } = render(<TestNavigator />);
+    const {getByText, queryByText} = render(<TestNavigator />);
 
     // Navigate to a differnet page (as the default is chat screen)
     fireEvent.press(getByText('Models'));
@@ -67,7 +67,7 @@ describe('SidebarContent Component', () => {
   });
 
   it('navigates to correct screen from drawer items', () => {
-    const { getByText, queryByText } = render(<TestNavigator />);
+    const {getByText, queryByText} = render(<TestNavigator />);
 
     // Ensure the Models screen is rendered by pressing the 'Models' drawer item
     fireEvent.press(getByText('Models'));

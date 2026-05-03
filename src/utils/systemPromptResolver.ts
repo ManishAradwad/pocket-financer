@@ -1,4 +1,4 @@
-import type { Model } from './types';
+import type {Model} from './types';
 
 export interface SystemPromptDependencies {
   model?: Model | null;
@@ -12,7 +12,7 @@ export interface SystemPromptDependencies {
 export function resolveSystemPrompt(
   dependencies: SystemPromptDependencies,
 ): string {
-  const { model } = dependencies;
+  const {model} = dependencies;
 
   // Priority 1: Model's chat template system prompt
   if (model?.chatTemplate?.systemPrompt) {
@@ -29,7 +29,7 @@ export function resolveSystemPrompt(
  */
 export function resolveSystemMessages(
   dependencies: SystemPromptDependencies,
-): Array<{ role: 'system'; content: string }> {
+): Array<{role: 'system'; content: string}> {
   const systemPrompt = resolveSystemPrompt(dependencies);
 
   if (!systemPrompt.trim()) {

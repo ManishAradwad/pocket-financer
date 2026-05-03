@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, {useEffect, useState} from 'react';
 import {
   View,
   Text,
@@ -8,11 +8,11 @@ import {
   SafeAreaView,
   Alert,
 } from 'react-native';
-import { Card, Button } from 'react-native-paper';
-import { database } from '../../../../database';
-import { chatSessionRepository } from '../../../../repositories/ChatSessionRepository';
+import {Card, Button} from 'react-native-paper';
+import {database} from '../../../../database';
+import {chatSessionRepository} from '../../../../repositories/ChatSessionRepository';
 
-import { useNavigation } from '@react-navigation/native';
+import {useNavigation} from '@react-navigation/native';
 
 // Define the collections we want to inspect
 const COLLECTIONS = [
@@ -37,7 +37,7 @@ const DatabaseInspectorScreen = () => {
 
   // Load data for all collections
   const loadAllCollections = async () => {
-    const data: { [key: string]: Array<any> } = {};
+    const data: {[key: string]: Array<any>} = {};
 
     for (const collectionName of COLLECTIONS) {
       try {
@@ -75,7 +75,6 @@ const DatabaseInspectorScreen = () => {
     }
   };
 
-
   const renderCollectionList = () => {
     return (
       <Card style={styles.card}>
@@ -106,7 +105,6 @@ const DatabaseInspectorScreen = () => {
               style={styles.resetButton}>
               Reset Chat Migration
             </Button>
-
           </View>
         </Card.Actions>
       </Card>
@@ -148,7 +146,6 @@ const DatabaseInspectorScreen = () => {
                       Session: {record.session_id}
                     </Text>
                   )}
-
                 </TouchableOpacity>
               ))
             )}
@@ -163,7 +160,7 @@ const DatabaseInspectorScreen = () => {
 
   // Find related records for a given record
   const findRelatedRecords = (record: any, collection: string) => {
-    const relatedRecords: { [key: string]: any[] } = {};
+    const relatedRecords: {[key: string]: any[]} = {};
 
     // If this is a chat_session, find related messages and completion_settings
     if (collection === 'chat_sessions') {
@@ -206,8 +203,6 @@ const DatabaseInspectorScreen = () => {
       }
     }
 
-
-
     return relatedRecords;
   };
 
@@ -236,8 +231,9 @@ const DatabaseInspectorScreen = () => {
       <Card style={styles.card}>
         <Card.Title
           title="Record Details"
-          subtitle={`${selectedCollection} (${currentIndex + 1}/${records.length
-            })`}
+          subtitle={`${selectedCollection} (${currentIndex + 1}/${
+            records.length
+          })`}
         />
         <Card.Content>
           <ScrollView style={styles.recordDetails}>

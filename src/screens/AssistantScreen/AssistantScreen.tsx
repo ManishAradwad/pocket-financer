@@ -1,21 +1,17 @@
-import React, { useRef, ReactNode } from 'react';
+import React, {useRef, ReactNode} from 'react';
 
-import { observer } from 'mobx-react';
+import {observer} from 'mobx-react';
 
-import {
-  Bubble,
-  ChatView,
-  ErrorSnackbar,
-} from '../../components';
+import {Bubble, ChatView, ErrorSnackbar} from '../../components';
 
-import { useChatSession } from '../../hooks';
-import { usePendingMessage } from '../../hooks/useDeepLinking';
+import {useChatSession} from '../../hooks';
+import {usePendingMessage} from '../../hooks/useDeepLinking';
 
-import { modelStore, chatSessionStore, uiStore } from '../../store';
+import {modelStore, chatSessionStore, uiStore} from '../../store';
 
-import { L10nContext } from '../../utils';
-import { MessageType } from '../../utils/types';
-import { user, assistant } from '../../utils/chat';
+import {L10nContext} from '../../utils';
+import {MessageType} from '../../utils/types';
+import {user, assistant} from '../../utils/chat';
 
 const renderBubble = ({
   child,
@@ -44,11 +40,11 @@ export const AssistantScreen: React.FC = observer(() => {
   } | null>(null);
   const l10n = React.useContext(L10nContext);
 
-  const { handleSendPress, handleStopPress, isMultimodalEnabled } =
+  const {handleSendPress, handleStopPress, isMultimodalEnabled} =
     useChatSession(currentMessageInfo, user, assistant);
 
   // Handle deep linking for message prefill
-  const { pendingMessage, clearPendingMessage } = usePendingMessage();
+  const {pendingMessage, clearPendingMessage} = usePendingMessage();
 
   // Check if multimodal is enabled
   const [multimodalEnabled, setMultimodalEnabled] = React.useState(false);
@@ -98,7 +94,6 @@ export const AssistantScreen: React.FC = observer(() => {
       await chatSessionStore.setNewChatCompletionSettings(updatedSettings);
     }
   };
-
 
   // Otherwise, show the regular chat view
   return (

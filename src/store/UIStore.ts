@@ -134,7 +134,6 @@ export class UIStore {
       this.iOSBackgroundDownloading = value;
     });
   }
-
 }
 
 export const uiStore = new UIStore();

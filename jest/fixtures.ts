@@ -1,4 +1,4 @@
-import { MessageType, Size, User } from '../src/utils/types';
+import {MessageType, Size, User} from '../src/utils/types';
 
 export const defaultDerivedMessageProps = {
   nextMessageInGroup: false,
@@ -69,4 +69,3 @@ export const derivedTextMessage: MessageType.DerivedText = {
 export const user: User = {
   id: 'userId',
 };
-

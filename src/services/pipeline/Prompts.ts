@@ -39,5 +39,5 @@ JSON Output:`;
  * characters, which naive string replacement would not.
  */
 export function renderPrompt(template: string, smsBody: string): string {
-    return template.replace('{sms_json}', JSON.stringify(smsBody));
+  return template.replace('{sms_json}', JSON.stringify(smsBody));
 }

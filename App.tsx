@@ -1,31 +1,31 @@
 import * as React from 'react';
-import { Dimensions, StyleSheet, View } from 'react-native';
-import { Text } from 'react-native-paper';
-import { CapabilityDetectionService } from './src/services/pipeline/CapabilityDetectionService';
+import {Dimensions, StyleSheet, View} from 'react-native';
+import {Text} from 'react-native-paper';
+import {CapabilityDetectionService} from './src/services/pipeline/CapabilityDetectionService';
 import SmsService from './src/services/sms/SmsService';
-import { PipelineService } from './src/services/pipeline/PipelineService';
+import {PipelineService} from './src/services/pipeline/PipelineService';
 
-import { observer } from 'mobx-react';
-import { NavigationContainer } from '@react-navigation/native';
-import { Provider as PaperProvider } from 'react-native-paper';
-import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
-import { createDrawerNavigator } from '@react-navigation/drawer';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { KeyboardProvider } from 'react-native-keyboard-controller';
+import {observer} from 'mobx-react';
+import {NavigationContainer} from '@react-navigation/native';
+import {Provider as PaperProvider} from 'react-native-paper';
+import {BottomSheetModalProvider} from '@gorhom/bottom-sheet';
+import {createDrawerNavigator} from '@react-navigation/drawer';
+import {SafeAreaProvider} from 'react-native-safe-area-context';
+import {KeyboardProvider} from 'react-native-keyboard-controller';
 import {
   gestureHandlerRootHOC,
   GestureHandlerRootView,
 } from 'react-native-gesture-handler';
 
-import { uiStore } from './src/store';
-import { useTheme } from './src/hooks';
-import { useDeepLinking } from './src/hooks/useDeepLinking';
-import { Theme } from './src/utils/types';
+import {uiStore} from './src/store';
+import {useTheme} from './src/hooks';
+import {useDeepLinking} from './src/hooks/useDeepLinking';
+import {Theme} from './src/utils/types';
 
-import { l10n, AvailableLanguage } from './src/locales';
-import { initLocale } from './src/utils';
-import { L10nContext } from './src/utils';
-import { ROUTES } from './src/utils/navigationConstants';
+import {l10n, AvailableLanguage} from './src/locales';
+import {initLocale} from './src/utils';
+import {L10nContext} from './src/utils';
+import {ROUTES} from './src/utils/navigationConstants';
 
 import {
   SidebarContent,
@@ -68,13 +68,13 @@ const App = observer(() => {
     initLocale(uiStore.language as AvailableLanguage);
 
     // Check device capabilities
-    CapabilityDetectionService.checkAndSelectModel().then((supported) => {
+    CapabilityDetectionService.checkAndSelectModel().then(supported => {
       setIsSupported(supported);
       if (supported) {
         // Start processing background SMS if permissions are granted
         SmsService.hasPermissions().then(hasPerms => {
           if (hasPerms) {
-            SmsService.startListening((sms) => {
+            SmsService.startListening(sms => {
               PipelineService.processSms(sms);
             });
           }
@@ -85,12 +85,24 @@ const App = observer(() => {
 
   if (isSupported === false) {
     return (
-      <View style={[styles.root, { justifyContent: 'center', alignItems: 'center', padding: 20 }]}>
-        <Text variant="headlineMedium" style={{ color: theme.colors.error, textAlign: 'center', marginBottom: 10 }}>
+      <View
+        style={[
+          styles.root,
+          {justifyContent: 'center', alignItems: 'center', padding: 20},
+        ]}>
+        <Text
+          variant="headlineMedium"
+          style={{
+            color: theme.colors.error,
+            textAlign: 'center',
+            marginBottom: 10,
+          }}>
           Unsupported Device
         </Text>
-        <Text variant="bodyLarge" style={{ textAlign: 'center' }}>
-          Pocket-Financer requires at least 2GB of RAM to process your SMS securely on-device without any data leaving your phone. Your device currently does not meet this requirement.
+        <Text variant="bodyLarge" style={{textAlign: 'center'}}>
+          Pocket-Financer requires at least 2GB of RAM to process your SMS
+          securely on-device without any data leaving your phone. Your device
+          currently does not meet this requirement.
         </Text>
       </View>
     );

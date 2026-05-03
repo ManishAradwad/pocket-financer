@@ -1,7 +1,6 @@
 import {Platform} from 'react-native';
 import DeviceInfo from 'react-native-device-info';
 import NativeHardwareInfo from '../specs/NativeHardwareInfo';
-import type {CPUInfo, GPUInfo} from '../specs/NativeHardwareInfo';
 
 /**
  * Device GPU capabilities result
@@ -44,7 +43,7 @@ export async function checkGpuSupport(): Promise<GpuCapabilities> {
     return {
       isSupported: false,
       reason: 'simulator',
-      details: { isSimulator: true },
+      details: {isSimulator: true},
     };
   }
 
@@ -54,7 +53,7 @@ export async function checkGpuSupport(): Promise<GpuCapabilities> {
     return {
       isSupported,
       reason: isSupported ? undefined : 'ios_version',
-      details: { iosVersion },
+      details: {iosVersion},
     };
   } else if (Platform.OS === 'android') {
     // Android requires Adreno GPU + i8mm + dotprod CPU features
@@ -84,13 +83,13 @@ export async function checkGpuSupport(): Promise<GpuCapabilities> {
       return {
         isSupported,
         reason,
-        details: { hasAdreno, hasI8mm, hasDotProd },
+        details: {hasAdreno, hasI8mm, hasDotProd},
       };
     } catch (error) {
       console.warn('Failed to check GPU support:', error);
-      return { isSupported: false, reason: 'unknown' };
+      return {isSupported: false, reason: 'unknown'};
     }
   }
 
-  return { isSupported: false, reason: 'unknown' };
+  return {isSupported: false, reason: 'unknown'};
 }

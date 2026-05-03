@@ -9,28 +9,25 @@ import {
   ScrollView,
   Image,
 } from 'react-native';
-import { launchCamera, launchImageLibrary } from 'react-native-image-picker';
-import { useCameraPermission } from 'react-native-vision-camera';
+import {launchCamera, launchImageLibrary} from 'react-native-image-picker';
+import {useCameraPermission} from 'react-native-vision-camera';
 import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
 
-import { observer } from 'mobx-react';
-import { IconButton, Text } from 'react-native-paper';
+import {observer} from 'mobx-react';
+import {IconButton, Text} from 'react-native-paper';
 
-import {
-  PlusIcon,
-  AtomIcon,
-} from '../../assets/icons';
+import {PlusIcon, AtomIcon} from '../../assets/icons';
 
-import { useTheme } from '../../hooks';
+import {useTheme} from '../../hooks';
 
-import { createStyles } from './styles';
+import {createStyles} from './styles';
 
-import { chatSessionStore, modelStore } from '../../store';
+import {chatSessionStore, modelStore} from '../../store';
 
-import { MessageType } from '../../utils/types';
-import { L10nContext, UserContext } from '../../utils';
+import {MessageType} from '../../utils/types';
+import {L10nContext, UserContext} from '../../utils';
 
-import { SendButton, StopButton, Menu } from '..';
+import {SendButton, StopButton, Menu} from '..';
 
 export interface ChatInputTopLevelProps {
   /** Whether the AI is currently streaming tokens */
@@ -106,9 +103,6 @@ export const ChatInput = observer(
     isPickerVisible,
     inputBackgroundColor,
     isCameraActive = false,
-    onStartCamera,
-    promptText,
-    onPromptTextChange,
     showImageUpload = false,
     isVisionEnabled = false,
     defaultImages,
@@ -125,7 +119,7 @@ export const ChatInput = observer(
     const iconRotation = React.useRef(new Animated.Value(0)).current;
 
     // Camera permission hook from react-native-vision-camera
-    const { hasPermission, requestPermission } = useCameraPermission();
+    const {hasPermission, requestPermission} = useCameraPermission();
 
     const hasActiveModel = !!modelStore.activeModelId;
 
@@ -144,7 +138,7 @@ export const ChatInput = observer(
     const [showModelWarning, setShowModelWarning] = React.useState(false);
     const isEditMode = chatSessionStore.isEditMode;
 
-    const styles = createStyles({ theme, isEditMode });
+    const styles = createStyles({theme, isEditMode});
 
     const value = textInputProps?.value ?? text;
 
@@ -314,8 +308,6 @@ export const ChatInput = observer(
     const isSendButtonEnabled = value.trim().length > 0 && hasActiveModel;
     const sendButtonOpacity = isSendButtonEnabled ? 1 : 0.4;
 
-
-
     const onSurfaceColor = theme.colors.text;
     const onSurfaceColorVariant = onSurfaceColor + '55'; // for disabled state or placeholder text
     // // Plus button state
@@ -363,10 +355,11 @@ export const ChatInput = observer(
                 {selectedImages.map((uri, index) => (
                   <View key={`${uri}-${index}`} style={styles.imageContainer}>
                     <Image
-                      source={{ uri }}
+                      source={{uri}}
                       style={styles.previewImage}
-                      accessibilityLabel={`Image preview ${index + 1} of ${selectedImages.length
-                        }`}
+                      accessibilityLabel={`Image preview ${index + 1} of ${
+                        selectedImages.length
+                      }`}
                     />
                     <IconButton
                       icon="close-circle"
@@ -433,7 +426,7 @@ export const ChatInput = observer(
                       style={styles.plusButton}
                       disabled={!isPlusButtonEnabled}
                       onPress={
-                        isPlusButtonEnabled ? handlePlusButtonPress : () => { }
+                        isPlusButtonEnabled ? handlePlusButtonPress : () => {}
                       }
                       accessibilityLabel="Add image"
                       accessibilityRole="button">
@@ -458,8 +451,8 @@ export const ChatInput = observer(
                 <TouchableOpacity
                   style={[
                     styles.thinkingToggleLeft,
-                    isThinkingEnabled && { backgroundColor: onSurfaceColor },
-                    { borderColor: onSurfaceColorVariant },
+                    isThinkingEnabled && {backgroundColor: onSurfaceColor},
+                    {borderColor: onSurfaceColorVariant},
                   ]}
                   onPress={() => onThinkingToggle?.(!isThinkingEnabled)}
                   accessibilityLabel={
@@ -482,8 +475,8 @@ export const ChatInput = observer(
                     style={[
                       styles.thinkingToggleText,
                       isThinkingEnabled
-                        ? { color: inputBackgroundColor }
-                        : { color: onSurfaceColorVariant },
+                        ? {color: inputBackgroundColor}
+                        : {color: onSurfaceColorVariant},
                     ]}>
                     {l10n.components.chatInput.thinkingToggle.thinkText}
                   </Text>
@@ -507,7 +500,7 @@ export const ChatInput = observer(
                 <StopButton color={onSurfaceColor} onPress={onStopPress} />
               ) : (
                 isSendButtonVisible && (
-                  <View style={{ opacity: sendButtonOpacity }}>
+                  <View style={{opacity: sendButtonOpacity}}>
                     <SendButton color={onSurfaceColor} onPress={handleSend} />
                   </View>
                 )

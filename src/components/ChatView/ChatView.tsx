@@ -12,9 +12,9 @@ import {
 } from 'react-native';
 
 import dayjs from 'dayjs';
-import { observer } from 'mobx-react';
+import {observer} from 'mobx-react';
 import calendar from 'dayjs/plugin/calendar';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import {
   KeyboardStickyView,
@@ -29,16 +29,16 @@ import Reanimated, {
   useDerivedValue,
 } from 'react-native-reanimated';
 
-import { useComponentSize } from '../KeyboardAccessoryView/hooks';
+import {useComponentSize} from '../KeyboardAccessoryView/hooks';
 
-import { useTheme, useMessageActions, usePrevious } from '../../hooks';
+import {useTheme, useMessageActions, usePrevious} from '../../hooks';
 
 import ImageView from './ImageView';
-import { createStyles } from './styles';
+import {createStyles} from './styles';
 
-import { chatSessionStore, modelStore } from '../../store';
+import {chatSessionStore, modelStore} from '../../store';
 
-import { MessageType, User } from '../../utils/types';
+import {MessageType, User} from '../../utils/types';
 import {
   calculateChatMessages,
   unwrap,
@@ -192,7 +192,7 @@ export const ChatView = observer(
     // ============ THEME & LOCALIZATION ============
     const l10n = React.useContext(L10nContext);
     const theme = useTheme();
-    const styles = createStyles({ theme });
+    const styles = createStyles({theme});
     const insets = useSafeAreaInsets();
 
     // ============ REFS ============
@@ -206,7 +206,6 @@ export const ChatView = observer(
     inputTextRef.current = inputText;
     const [inputImages, setInputImages] = React.useState<string[]>([]);
 
-
     // Image viewer state
     const [isImageViewVisible, setIsImageViewVisible] = React.useState(false);
     const [imageViewIndex, setImageViewIndex] = React.useState(0);
@@ -214,7 +213,7 @@ export const ChatView = observer(
 
     // Context menu state
     const [menuVisible, setMenuVisible] = React.useState(false);
-    const [menuPosition, setMenuPosition] = React.useState({ x: 0, y: 0 });
+    const [menuPosition, setMenuPosition] = React.useState({x: 0, y: 0});
     const [selectedMessage, setSelectedMessage] =
       React.useState<MessageType.Any | null>(null);
 
@@ -222,8 +221,8 @@ export const ChatView = observer(
     const [isNextPageLoading, setNextPageLoading] = React.useState(false);
 
     // ============ COMPONENT SIZE TRACKING ============
-    const { onLayout, size } = useComponentSize();
-    const { onLayout: onLayoutChatInput, size: chatInputHeight } =
+    const {onLayout, size} = useComponentSize();
+    const {onLayout: onLayoutChatInput, size: chatInputHeight} =
       useComponentSize();
 
     const bottomComponentHeight = React.useMemo(() => {
@@ -274,7 +273,7 @@ export const ChatView = observer(
     // Apply bottom padding (safe area inset) only when keyboard is NOT visible
     const inputContainerAnimatedStyle = useAnimatedStyle(() => ({
       transform: [
-        { translateY: keyboard.height.value - keyboardOffsetBottom.value },
+        {translateY: keyboard.height.value - keyboardOffsetBottom.value},
       ],
       paddingBottom: isKeyboardVisible.value ? 0 : insets.bottom,
     }));
@@ -341,8 +340,8 @@ export const ChatView = observer(
 
     // Animated style for scroll-to-bottom button visibility
     const scrollToBottomAnimatedStyle = useAnimatedStyle(() => ({
-      opacity: withTiming(hasHiddenContent.value, { duration: 160 }),
-      transform: [{ translateY: withTiming(hasHiddenContent.value ? 0 : 8) }],
+      opacity: withTiming(hasHiddenContent.value, {duration: 160}),
+      transform: [{translateY: withTiming(hasHiddenContent.value ? 0 : 8)}],
     }));
 
     // Scroll to bottom handler
@@ -355,7 +354,7 @@ export const ChatView = observer(
 
     // ============ MESSAGE PROCESSING & CALCULATIONS ============
     // Calculate chat messages with date headers and user names
-    const { chatMessages, gallery } = calculateChatMessages(messages, user, {
+    const {chatMessages, gallery} = calculateChatMessages(messages, user, {
       customDateHeaderText,
       dateFormat,
       showUserNames,
@@ -387,7 +386,7 @@ export const ChatView = observer(
       chatSessionStore.exitEditMode();
     }, []);
 
-    const { handleCopy, handleEdit, handleTryAgain, handleTryAgainWith } =
+    const {handleCopy, handleEdit, handleTryAgain, handleTryAgainWith} =
       useMessageActions({
         user,
         messages,
@@ -435,7 +434,7 @@ export const ChatView = observer(
       // `onEndReached`, impossible to test.
       // TODO: Verify again later
       /* istanbul ignore next */
-      async ({ distanceFromEnd }: { distanceFromEnd: number }) => {
+      async ({distanceFromEnd}: {distanceFromEnd: number}) => {
         if (
           !onEndReached ||
           isLastPage ||
@@ -498,8 +497,8 @@ export const ChatView = observer(
           return;
         }
 
-        const { pageX, pageY } = event.nativeEvent;
-        setMenuPosition({ x: pageX, y: pageY });
+        const {pageX, pageY} = event.nativeEvent;
+        setMenuPosition({x: pageX, y: pageY});
         setSelectedMessage(message);
         setMenuVisible(true);
         externalOnMessageLongPress?.(message);
@@ -513,7 +512,7 @@ export const ChatView = observer(
     }, []);
 
     const keyExtractor = React.useCallback(
-      ({ id }: MessageType.DerivedAny) => id,
+      ({id}: MessageType.DerivedAny) => id,
       [],
     );
 
@@ -645,11 +644,11 @@ export const ChatView = observer(
 
     // Render individual message
     const renderMessage = React.useCallback(
-      ({ item: message }: { item: MessageType.DerivedAny; index: number }) => {
+      ({item: message}: {item: MessageType.DerivedAny; index: number}) => {
         const messageWidth =
           showUserAvatars &&
-            message.type !== 'dateHeader' &&
-            message.author?.id !== user.id
+          message.type !== 'dateHeader' &&
+          message.author?.id !== user.id
             ? Math.floor(Math.min(size.width * 0.9, 900))
             : Math.floor(Math.min(size.width * 0.92, 900));
 
@@ -708,7 +707,7 @@ export const ChatView = observer(
       return (
         <ChatEmptyPlaceholder
           bottomComponentHeight={bottomComponentHeight}
-          onSelectModel={() => { }}
+          onSelectModel={() => {}}
         />
       );
     }, [bottomComponentHeight]);
@@ -766,7 +765,7 @@ export const ChatView = observer(
         <>
           <Reanimated.View
             // eslint-disable-next-line react-native/no-inline-styles
-            style={{ flex: 1 }}>
+            style={{flex: 1}}>
             <Reanimated.FlatList
               automaticallyAdjustContentInsets={false}
               contentContainerStyle={[
@@ -783,7 +782,7 @@ export const ChatView = observer(
               ListHeaderComponent={renderListHeaderComponent}
               maxToRenderPerBatch={6}
               onEndReachedThreshold={0.75}
-              style={[styles.flatList, { marginBottom: bottomComponentHeight }]}
+              style={[styles.flatList, {marginBottom: bottomComponentHeight}]}
               showsVerticalScrollIndicator={false}
               onScroll={handleScroll}
               {...unwrap(flatListProps)}
@@ -797,9 +796,9 @@ export const ChatView = observer(
               maintainVisibleContentPosition={
                 isStreaming // || hasHiddenContentState
                   ? {
-                    autoscrollToTopThreshold: 20,
-                    minIndexForVisible: 1, //isStreaming ? 1 : 0,
-                  }
+                      autoscrollToTopThreshold: 20,
+                      minIndexForVisible: 1, //isStreaming ? 1 : 0,
+                    }
                   : undefined
               }
             />
@@ -817,7 +816,7 @@ export const ChatView = observer(
                   20 /* padding */,
               },
             ]}>
-            <KeyboardStickyView offset={{ closed: 0, opened: insets.bottom }}>
+            <KeyboardStickyView offset={{closed: 0, opened: insets.bottom}}>
               <TouchableOpacity
                 style={styles.scrollToBottomButton}
                 onPress={scrollToBottom}>
@@ -853,8 +852,6 @@ export const ChatView = observer(
       ],
     );
 
-
-
     // ============ COMPUTED VALUES ============
     const inputBackgroundColor = theme.colors.surface;
 
@@ -862,7 +859,7 @@ export const ChatView = observer(
     return (
       <UserContext.Provider value={user}>
         <View
-          style={[styles.container, { backgroundColor: inputBackgroundColor }]}
+          style={[styles.container, {backgroundColor: inputBackgroundColor}]}
           onLayout={onLayout}>
           {/* Header */}
           <View style={styles.headerWrapper}>
@@ -880,12 +877,13 @@ export const ChatView = observer(
               style={[
                 styles.inputContainer,
                 inputContainerAnimatedStyle,
-                { backgroundColor: inputBackgroundColor },
+                {backgroundColor: inputBackgroundColor},
               ]}>
               <ChatInput
                 {...{
                   ...unwrap(inputProps),
                   isStreaming,
+                  isStopVisible,
                   onSendPress: wrappedOnSendPress,
                   onStopPress,
                   chatInputHeight,

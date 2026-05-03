@@ -1,13 +1,13 @@
-﻿import { Platform, Alert } from 'react-native';
+﻿import {Platform, Alert} from 'react-native';
 
-import { format } from 'date-fns';
+import {format} from 'date-fns';
 import Share from 'react-native-share';
 import * as RNFS from '@dr.pogodin/react-native-fs';
 
-import { chatSessionRepository } from '../repositories/ChatSessionRepository';
+import {chatSessionRepository} from '../repositories/ChatSessionRepository';
 
-import { uiStore } from '../store';
-import { ensureLegacyStoragePermission } from './androidPermission';
+import {uiStore} from '../store';
+import {ensureLegacyStoragePermission} from './androidPermission';
 /**
  * Export a single chat session to a JSON file
  * @param sessionId The ID of the session to export
@@ -21,7 +21,7 @@ export const exportChatSession = async (sessionId: string): Promise<void> => {
     }
 
     // Format the session data for export
-    const { session, messages, completionSettings } = sessionData;
+    const {session, messages, completionSettings} = sessionData;
 
     const exportData = {
       id: session.id,
@@ -252,7 +252,7 @@ const shareJsonData = async (
                         Alert.alert(
                           currentL10n.components.exportUtils.shareError,
                           currentL10n.components.exportUtils.shareErrorMessage,
-                          [{ text: currentL10n.components.exportUtils.ok }],
+                          [{text: currentL10n.components.exportUtils.ok}],
                         );
                       }
                     }
@@ -260,7 +260,7 @@ const shareJsonData = async (
                 }
               },
             },
-            { text: currentL10n.components.exportUtils.ok },
+            {text: currentL10n.components.exportUtils.ok},
           ],
         );
       } catch (error) {
@@ -289,13 +289,13 @@ const shareJsonData = async (
                       currentL10n.components.exportUtils.shareError,
                       currentL10n.components.exportUtils
                         .shareContentErrorMessage,
-                      [{ text: currentL10n.components.exportUtils.ok }],
+                      [{text: currentL10n.components.exportUtils.ok}],
                     );
                   }
                 }
               },
             },
-            { text: currentL10n.components.exportUtils.cancel },
+            {text: currentL10n.components.exportUtils.cancel},
           ],
         );
       }
@@ -307,7 +307,7 @@ const shareJsonData = async (
     Alert.alert(
       currentL10n.components.exportUtils.exportError,
       currentL10n.components.exportUtils.exportErrorMessage,
-      [{ text: currentL10n.components.exportUtils.ok }],
+      [{text: currentL10n.components.exportUtils.ok}],
     );
 
     throw error;

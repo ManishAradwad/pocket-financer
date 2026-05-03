@@ -11,7 +11,10 @@ import {createStyles} from './styles';
 import {chatSessionRepository} from '../../repositories/ChatSessionRepository';
 import {TestCompletionScreen, DatabaseInspectorScreen} from './screens';
 import SmsService from '../../services/sms/SmsService';
-import {PipelineService, PipelineStep} from '../../services/pipeline/PipelineService';
+import {
+  PipelineService,
+  PipelineStep,
+} from '../../services/pipeline/PipelineService';
 
 const MAX_PIPELINE_LOG_ENTRIES = 40;
 
@@ -84,7 +87,9 @@ const DevToolsHomeScreen: React.FC = () => {
   useEffect(() => {
     const unsubscribeDebug = PipelineService.subscribeDebug(step => {
       if (!mountedRef.current) return;
-      setPipelineLog(prev => [step, ...prev].slice(0, MAX_PIPELINE_LOG_ENTRIES));
+      setPipelineLog(prev =>
+        [step, ...prev].slice(0, MAX_PIPELINE_LOG_ENTRIES),
+      );
     });
     return () => {
       mountedRef.current = false;
@@ -119,7 +124,8 @@ const DevToolsHomeScreen: React.FC = () => {
       const history = await SmsService.fetchSmsHistory({limit: 5});
       if (mountedRef.current) setSmsData(JSON.stringify(history, null, 2));
     } catch (e: any) {
-      if (mountedRef.current) setSmsData(`Error fetching history: ${e.message}`);
+      if (mountedRef.current)
+        setSmsData(`Error fetching history: ${e.message}`);
     }
   };
 
@@ -136,13 +142,15 @@ const DevToolsHomeScreen: React.FC = () => {
       devListenerUnsubRef.current = SmsService.startListening(sms => {
         if (mountedRef.current) {
           setSmsData(
-            prev => `NEW SMS RECEIVED:\n${JSON.stringify(sms, null, 2)}\n\n` + prev,
+            prev =>
+              `NEW SMS RECEIVED:\n${JSON.stringify(sms, null, 2)}\n\n` + prev,
           );
         }
         PipelineService.processSms(sms);
       });
     } catch (e: any) {
-      if (mountedRef.current) setSmsData(`Error starting listener: ${e.message}`);
+      if (mountedRef.current)
+        setSmsData(`Error starting listener: ${e.message}`);
     }
   };
 

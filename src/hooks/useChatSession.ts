@@ -1,18 +1,18 @@
-import React, { useRef } from 'react';
+import React, {useRef} from 'react';
 
-import { toJS, runInAction } from 'mobx';
+import {toJS, runInAction} from 'mobx';
 
-import { chatSessionRepository } from '../repositories/ChatSessionRepository';
+import {chatSessionRepository} from '../repositories/ChatSessionRepository';
 
-import { randId } from '../utils';
-import { L10nContext } from '../utils';
-import { chatSessionStore, modelStore, uiStore } from '../store';
+import {randId} from '../utils';
+import {L10nContext} from '../utils';
+import {chatSessionStore, modelStore, uiStore} from '../store';
 
-import { MessageType, User } from '../utils/types';
-import { createMultimodalWarning } from '../utils/errors';
-import { resolveSystemMessages } from '../utils/systemPromptResolver';
-import { convertToChatMessages, removeThinkingParts } from '../utils/chat';
-import { activateKeepAwake, deactivateKeepAwake } from '../utils/keepAwake';
+import {MessageType, User} from '../utils/types';
+import {createMultimodalWarning} from '../utils/errors';
+import {resolveSystemMessages} from '../utils/systemPromptResolver';
+import {convertToChatMessages, removeThinkingParts} from '../utils/chat';
+import {activateKeepAwake, deactivateKeepAwake} from '../utils/keepAwake';
 import {
   toApiCompletionParams,
   CompletionParams,
@@ -32,7 +32,7 @@ const prepareCompletion = async ({
 }: {
   imageUris: string[];
   message: MessageType.PartialText;
-  systemMessages: Array<{ role: 'system'; content: string }>;
+  systemMessages: Array<{role: 'system'; content: string}>;
   contextId: string;
   assistant: User;
   conversationIdRef: string;
@@ -59,7 +59,7 @@ const prepareCompletion = async ({
       },
       ...imageUris.map(path => ({
         type: 'image_url',
-        image_url: { url: path }, // llama.rn handles file:// prefix removal
+        image_url: {url: path}, // llama.rn handles file:// prefix removal
       })),
     ];
   } else {
@@ -151,7 +151,7 @@ const prepareCompletion = async ({
     sessionId: chatSessionStore.activeSessionId!,
   };
 
-  return { cleanCompletionParams, messageInfo };
+  return {cleanCompletionParams, messageInfo};
 };
 
 export const useChatSession = (
@@ -177,7 +177,7 @@ export const useChatSession = (
       id: randId(),
       text,
       type: 'text',
-      metadata: { system: true, ...metadata },
+      metadata: {system: true, ...metadata},
     };
     await addMessage(textMessage);
   };
@@ -240,7 +240,7 @@ export const useChatSession = (
     });
 
     // Prepare completion parameters and create message record
-    const { cleanCompletionParams, messageInfo } = await prepareCompletion({
+    const {cleanCompletionParams, messageInfo} = await prepareCompletion({
       imageUris: imageUris || [],
       message,
       systemMessages,
@@ -276,7 +276,7 @@ export const useChatSession = (
 
             // Use content and reasoning_content from the streaming data
             // llama.rn already separates these for us when enable_thinking is true
-            const { content = '', reasoning_content: reasoningContent } = data;
+            const {content = '', reasoning_content: reasoningContent} = data;
 
             // Update message with the separated content
             if (content || reasoningContent) {

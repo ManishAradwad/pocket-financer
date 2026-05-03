@@ -1,22 +1,22 @@
 import React from 'react';
-import { runInAction } from 'mobx';
+import {runInAction} from 'mobx';
 
-import { LlamaContext } from 'llama.rn';
+import {LlamaContext} from 'llama.rn';
 import {
   render as baseRender,
   fireEvent,
   act,
   waitFor,
 } from '../../../../jest/test-utils';
-import { AssistantScreen } from '../AssistantScreen';
+import {AssistantScreen} from '../AssistantScreen';
 
-import { chatSessionStore, modelStore } from '../../../store';
+import {chatSessionStore, modelStore} from '../../../store';
 
-import { l10n } from '../../../locales';
-import { mockLlamaContextParams } from '../../../../jest/fixtures/models';
+import {l10n} from '../../../locales';
+import {mockLlamaContextParams} from '../../../../jest/fixtures/models';
 
 const render = (ui: React.ReactElement, options: any = {}) =>
-  baseRender(ui, { withBottomSheetProvider: true, ...options });
+  baseRender(ui, {withBottomSheetProvider: true, ...options});
 
 describe('AssistantScreen', () => {
   let llamaRN;
@@ -27,7 +27,7 @@ describe('AssistantScreen', () => {
   });
 
   it('renders correctly when model is not loaded', () => {
-    const { getByPlaceholderText } = render(<AssistantScreen />, {
+    const {getByPlaceholderText} = render(<AssistantScreen />, {
       withNavigation: true,
     });
     expect(getByPlaceholderText(l10n.en.chat.modelNotLoaded)).toBeTruthy();
@@ -35,7 +35,7 @@ describe('AssistantScreen', () => {
 
   it('renders correctly when model is loading', () => {
     modelStore.isContextLoading = true;
-    const { getByPlaceholderText } = render(<AssistantScreen />, {
+    const {getByPlaceholderText} = render(<AssistantScreen />, {
       withNavigation: true,
     });
     expect(getByPlaceholderText(l10n.en.chat.loadingModel)).toBeTruthy();
@@ -49,7 +49,7 @@ describe('AssistantScreen', () => {
       ),
       stopCompletion: jest.fn(),
     };
-    const { getByPlaceholderText } = render(<AssistantScreen />, {
+    const {getByPlaceholderText} = render(<AssistantScreen />, {
       withNavigation: true,
     });
     expect(getByPlaceholderText(l10n.en.chat.typeYourMessage)).toBeTruthy();
@@ -62,7 +62,7 @@ describe('AssistantScreen', () => {
       modelStore.context = new LlamaContext(mockLlamaContextParams);
     });
     modelStore.context!.completion = jest.fn().mockResolvedValue({
-      timings: { predicted_per_token_ms: 10, predicted_per_second: 100 },
+      timings: {predicted_per_token_ms: 10, predicted_per_second: 100},
     });
     modelStore.engine = {
       completion: jest.fn((params, onData) =>
@@ -71,7 +71,7 @@ describe('AssistantScreen', () => {
       stopCompletion: jest.fn(),
     };
 
-    const { getByPlaceholderText, getByTestId } = render(<AssistantScreen />, {
+    const {getByPlaceholderText, getByTestId} = render(<AssistantScreen />, {
       withNavigation: true,
     });
     const input = getByPlaceholderText(l10n.en.chat.typeYourMessage);
@@ -86,7 +86,7 @@ describe('AssistantScreen', () => {
     await waitFor(() => {
       expect(chatSessionStore.addMessageToCurrentSession).toHaveBeenCalledWith(
         expect.objectContaining({
-          author: expect.objectContaining({ id: 'y9d7f8pgn' }),
+          author: expect.objectContaining({id: 'y9d7f8pgn'}),
           text: 'Hello, Pocket-Financer!',
         }),
       );
@@ -116,7 +116,7 @@ describe('AssistantScreen', () => {
       stopCompletion: jest.fn(),
     };
 
-    const { getByPlaceholderText, getByTestId } = render(<AssistantScreen />, {
+    const {getByPlaceholderText, getByTestId} = render(<AssistantScreen />, {
       withNavigation: true,
     });
     const input = getByPlaceholderText(l10n.en.chat.typeYourMessage);
@@ -132,9 +132,9 @@ describe('AssistantScreen', () => {
 
     expect(chatSessionStore.addMessageToCurrentSession).toHaveBeenCalledWith(
       expect.objectContaining({
-        author: expect.objectContaining({ id: 'h3o3lc5xj' }),
+        author: expect.objectContaining({id: 'h3o3lc5xj'}),
         text: 'Completion failed: Completion failed',
-        metadata: expect.objectContaining({ system: true }),
+        metadata: expect.objectContaining({system: true}),
       }),
     );
   });
@@ -152,25 +152,25 @@ describe('AssistantScreen', () => {
       .mockReturnValue([
         {
           id: 'unique-message-id-1',
-          author: { id: 'y9d7f8pgn' },
+          author: {id: 'y9d7f8pgn'},
           text: 'User message',
           type: 'text',
         },
         {
           id: 'unique-message-id-2',
-          author: { id: 'h3o3lc5xj' },
+          author: {id: 'h3o3lc5xj'},
           text: 'Assistant message',
           type: 'text',
         },
         {
           id: 'unique-message-id-3',
-          author: { id: 'system' },
+          author: {id: 'system'},
           text: 'System message',
           type: 'text',
         },
       ]);
 
-    const { getByText } = render(<AssistantScreen />, {
+    const {getByText} = render(<AssistantScreen />, {
       withNavigation: true,
     });
 
@@ -189,7 +189,7 @@ describe('AssistantScreen', () => {
     if (modelStore.context) {
       modelStore.context.completion = jest
         .fn()
-        .mockReturnValue(new Promise(() => { })); // Never resolves
+        .mockReturnValue(new Promise(() => {})); // Never resolves
     }
     modelStore.engine = {
       completion: jest.fn((params, onData) =>
@@ -198,7 +198,7 @@ describe('AssistantScreen', () => {
       stopCompletion: jest.fn(),
     };
 
-    const { getByPlaceholderText, getByTestId } = render(<AssistantScreen />, {
+    const {getByPlaceholderText, getByTestId} = render(<AssistantScreen />, {
       withNavigation: true,
     });
     const input = getByPlaceholderText(l10n.en.chat.typeYourMessage);

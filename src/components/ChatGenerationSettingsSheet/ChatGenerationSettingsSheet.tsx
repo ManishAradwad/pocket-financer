@@ -1,21 +1,18 @@
-import React, { useContext, useEffect, useState } from 'react';
-import { Sheet } from '../Sheet/Sheet';
-import { CompletionSettings } from '..';
-import { CompletionParams } from '../../utils/completionTypes';
-import {
-  chatSessionStore,
-  defaultCompletionSettings,
-} from '../../store';
-import { styles } from './styles';
+import React, {useContext, useEffect, useState} from 'react';
+import {Sheet} from '../Sheet/Sheet';
+import {CompletionSettings} from '..';
+import {CompletionParams} from '../../utils/completionTypes';
+import {chatSessionStore, defaultCompletionSettings} from '../../store';
+import {styles} from './styles';
 import {
   COMPLETION_PARAMS_METADATA,
   validateCompletionSettings,
 } from '../../utils/modelSettings';
-import { Alert, View } from 'react-native';
-import { Button, SegmentedButtons, Text } from 'react-native-paper';
-import { L10nContext } from '../../utils';
-import { ChevronDownIcon } from '../../assets/icons';
-import { Menu } from '../Menu';
+import {Alert, View} from 'react-native';
+import {Button} from 'react-native-paper';
+import {L10nContext} from '../../utils';
+import {ChevronDownIcon} from '../../assets/icons';
+import {Menu} from '../Menu';
 interface ResetButtonProps {
   session: any;
   resetMenuVisible: boolean;
@@ -24,7 +21,7 @@ interface ResetButtonProps {
   handleResetToPreset: () => void;
 }
 
-const ChevronDownButtonIcon = ({ color }: { color: string }) => (
+const ChevronDownButtonIcon = ({color}: {color: string}) => (
   <ChevronDownIcon width={16} height={16} stroke={color} />
 );
 
@@ -111,7 +108,7 @@ export const ChatGenerationSettingsSheet = ({
   }, [session, isVisible]);
 
   const updateSettings = (name: string, value: any) => {
-    setSettings(prev => ({ ...prev, [name]: value }));
+    setSettings(prev => ({...prev, [name]: value}));
   };
 
   const onCloseSheet = () => {
@@ -152,7 +149,7 @@ export const ChatGenerationSettingsSheet = ({
         }
         return acc;
       },
-      { settings: {}, errors: {} } as {
+      {settings: {}, errors: {}} as {
         settings: typeof settings;
         errors: Record<string, string>;
       },
@@ -171,11 +168,11 @@ export const ChatGenerationSettingsSheet = ({
       Alert.alert(
         l10n.components.chatGenerationSettingsSheet.invalidValues,
         l10n.components.chatGenerationSettingsSheet.pleaseCorrect +
-        '\n' +
-        Object.entries(allErrors)
-          .map(([key, msg]) => `• ${key}: ${msg}`)
-          .join('\n'),
-        [{ text: l10n.components.chatGenerationSettingsSheet.ok }],
+          '\n' +
+          Object.entries(allErrors)
+            .map(([key, msg]) => `• ${key}: ${msg}`)
+            .join('\n'),
+        [{text: l10n.components.chatGenerationSettingsSheet.ok}],
       );
       return;
     }
@@ -200,7 +197,7 @@ export const ChatGenerationSettingsSheet = ({
       Alert.alert(
         l10n.components.chatGenerationSettingsSheet.applytoPresetAlert.title,
         l10n.components.chatGenerationSettingsSheet.applytoPresetAlert.message,
-        [{ text: l10n.components.chatGenerationSettingsSheet.ok }],
+        [{text: l10n.components.chatGenerationSettingsSheet.ok}],
       );
     }
   };
@@ -208,14 +205,14 @@ export const ChatGenerationSettingsSheet = ({
   const handleResetToPreset = () => {
     if (session) {
       // For session-specific settings, reset to match Preset settings
-      setSettings({ ...chatSessionStore.newChatCompletionSettings });
+      setSettings({...chatSessionStore.newChatCompletionSettings});
     }
     setResetMenuVisible(false);
   };
 
   const handleResetToDefault = () => {
     // Reset to system defaults
-    setSettings({ ...defaultCompletionSettings });
+    setSettings({...defaultCompletionSettings});
     setResetMenuVisible(false);
   };
 
@@ -231,10 +228,7 @@ export const ChatGenerationSettingsSheet = ({
       <Sheet.ScrollView
         bottomOffset={16}
         contentContainerStyle={styles.scrollviewContainer}>
-        <CompletionSettings
-          settings={settings}
-          onChange={updateSettings}
-        />
+        <CompletionSettings settings={settings} onChange={updateSettings} />
       </Sheet.ScrollView>
       <Sheet.Actions>
         <View style={styles.actionsContainer}>

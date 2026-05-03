@@ -1,7 +1,7 @@
-import { Database } from '@nozbe/watermelondb';
+import {Database} from '@nozbe/watermelondb';
 import SQLiteAdapter from '@nozbe/watermelondb/adapters/sqlite';
 import schema from './schema';
-import { Account, Transaction } from './models';
+import {Account, Transaction} from './models';
 
 const adapter = new SQLiteAdapter({
   schema,
@@ -17,4 +17,4 @@ export const database = new Database({
   modelClasses: [Account, Transaction],
 });
 
-export { Account, Transaction };
+export {Account, Transaction};

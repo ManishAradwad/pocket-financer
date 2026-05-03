@@ -1,25 +1,19 @@
-import React, { useContext } from 'react';
-import {
-  View,
-  ScrollView,
-  TouchableOpacity,
-  Alert,
-  Linking,
-} from 'react-native';
+import React, {useContext} from 'react';
+import {View, ScrollView, TouchableOpacity, Alert, Linking} from 'react-native';
 
 import DeviceInfo from 'react-native-device-info';
 import Clipboard from '@react-native-clipboard/clipboard';
-import { Text, Button } from 'react-native-paper';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
-import { BuildInfo } from 'llama.rn';
+import {Text, Button} from 'react-native-paper';
+import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
+import {BuildInfo} from 'llama.rn';
 
-import { CopyIcon, GithubIcon } from '../../assets/icons';
+import {CopyIcon, GithubIcon} from '../../assets/icons';
 
-import { useTheme } from '../../hooks';
-import { createStyles } from './styles';
-import { L10nContext } from '../../utils';
+import {useTheme} from '../../hooks';
+import {createStyles} from './styles';
+import {L10nContext} from '../../utils';
 
-const GithubButtonIcon = ({ color }: { color: string }) => (
+const GithubButtonIcon = ({color}: {color: string}) => (
   <GithubIcon stroke={color} />
 );
 
@@ -77,7 +71,8 @@ export const AboutScreen: React.FC = () => {
                 </TouchableOpacity>
               </View>
               <Text style={styles.llamaBuildText}>
-                llama.cpp {BuildInfo.number} ({BuildInfo.commit.substring(0, 7)})
+                llama.cpp {BuildInfo.number} ({BuildInfo.commit.substring(0, 7)}
+                )
               </Text>
             </View>
           </View>
@@ -90,7 +85,9 @@ export const AboutScreen: React.FC = () => {
             <Button
               mode="outlined"
               onPress={() =>
-                Linking.openURL('https://github.com/ManishAradwad/pocket-financer')
+                Linking.openURL(
+                  'https://github.com/ManishAradwad/pocket-financer',
+                )
               }
               style={styles.actionButton}
               icon={GithubButtonIcon}>

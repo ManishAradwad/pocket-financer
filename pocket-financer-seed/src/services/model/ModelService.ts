@@ -43,23 +43,23 @@
 //   import { modelService } from '../model/ModelService';
 
 export const modelService = {
-    async load(): Promise<void> {
-        throw new Error('ModelService.load() not implemented');
-    },
+  async load(): Promise<void> {
+    throw new Error('ModelService.load() not implemented');
+  },
 
-    async complete(_prompt: string, _params: any): Promise<string> {
-        throw new Error('ModelService.complete() not implemented');
-    },
+  async complete(_prompt: string, _params: any): Promise<string> {
+    throw new Error('ModelService.complete() not implemented');
+  },
 
-    stopCompletion(): void {
-        throw new Error('ModelService.stopCompletion() not implemented');
-    },
+  stopCompletion(): void {
+    throw new Error('ModelService.stopCompletion() not implemented');
+  },
 
-    isLoaded(): boolean {
-        return false;
-    },
+  isLoaded(): boolean {
+    return false;
+  },
 
-    setGpuLayers(_n: number): void {
-        // no-op — will be configured when model loads
-    },
+  setGpuLayers(_n: number): void {
+    // no-op — will be configured when model loads
+  },
 };

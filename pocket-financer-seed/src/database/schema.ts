@@ -1,4 +1,4 @@
-import { appSchema, tableSchema } from '@nozbe/watermelondb';
+import {appSchema, tableSchema} from '@nozbe/watermelondb';
 
 /**
  * Database schema for pocket-financer.
@@ -13,24 +13,24 @@ export default appSchema({
     tableSchema({
       name: 'accounts',
       columns: [
-        { name: 'name', type: 'string' },
-        { name: 'bank', type: 'string' },
-        { name: 'type', type: 'string' },
-        { name: 'created_at', type: 'number' },
-        { name: 'updated_at', type: 'number' },
+        {name: 'name', type: 'string'},
+        {name: 'bank', type: 'string'},
+        {name: 'type', type: 'string'},
+        {name: 'created_at', type: 'number'},
+        {name: 'updated_at', type: 'number'},
       ],
     }),
     tableSchema({
       name: 'transactions',
       columns: [
-        { name: 'amount', type: 'number' },
-        { name: 'merchant', type: 'string' },
-        { name: 'date', type: 'number' },
-        { name: 'type', type: 'string' },
-        { name: 'account_id', type: 'string', isIndexed: true },
-        { name: 'raw_message', type: 'string' },
-        { name: 'created_at', type: 'number' },
-        { name: 'updated_at', type: 'number' },
+        {name: 'amount', type: 'number'},
+        {name: 'merchant', type: 'string'},
+        {name: 'date', type: 'number'},
+        {name: 'type', type: 'string'},
+        {name: 'account_id', type: 'string', isIndexed: true},
+        {name: 'raw_message', type: 'string'},
+        {name: 'created_at', type: 'number'},
+        {name: 'updated_at', type: 'number'},
       ],
     }),
   ],

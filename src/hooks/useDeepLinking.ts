@@ -5,11 +5,11 @@
  * Must be called from a component inside NavigationContainer
  */
 
-import { useEffect, useCallback } from 'react';
-import { useNavigation } from '@react-navigation/native';
-import { deepLinkService, DeepLinkParams } from '../services/DeepLinkService';
-import { deepLinkStore } from '../store';
-import { ROUTES } from '../utils/navigationConstants';
+import {useEffect, useCallback} from 'react';
+import {useNavigation} from '@react-navigation/native';
+import {deepLinkService, DeepLinkParams} from '../services/DeepLinkService';
+import {deepLinkStore} from '../store';
+import {ROUTES} from '../utils/navigationConstants';
 
 /**
  * Hook for handling deep link navigation

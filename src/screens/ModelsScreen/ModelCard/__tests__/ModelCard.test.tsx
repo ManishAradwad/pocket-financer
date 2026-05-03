@@ -177,7 +177,10 @@ describe('ModelCard', () => {
     modelStore.engine = {} as any;
     try {
       const {getByTestId} = customRender(
-        <ModelCard model={downloadedModel} activeModelId={downloadedModel.id} />,
+        <ModelCard
+          model={downloadedModel}
+          activeModelId={downloadedModel.id}
+        />,
       );
 
       expect(getByTestId('offload-button')).toBeTruthy();

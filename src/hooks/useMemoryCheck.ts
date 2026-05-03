@@ -1,15 +1,15 @@
-import React, { useEffect, useState } from 'react';
+import React, {useEffect, useState} from 'react';
 import DeviceInfo from 'react-native-device-info';
-import { L10nContext, formatBytes } from '../utils';
-import { Model, ContextInitParams } from '../utils/types';
-import { isHighEndDevice } from '../utils/deviceCapabilities';
-import { getModelMemoryRequirement } from '../utils/memoryEstimator';
+import {L10nContext, formatBytes} from '../utils';
+import {Model, ContextInitParams} from '../utils/types';
+import {isHighEndDevice} from '../utils/deviceCapabilities';
+import {getModelMemoryRequirement} from '../utils/memoryEstimator';
 // Note: This creates a circular dependency with ModelStore (which imports hasEnoughMemory).
 // This is intentional and runtime-safe because:
 // 1. modelStore is instantiated after class definition
 // 2. hasEnoughMemory is only called at runtime, not during module initialization
-import { modelStore } from '../store';
-import { MemoryFitStatus } from '../utils/memoryDisplay';
+import {modelStore} from '../store';
+import {MemoryFitStatus} from '../utils/memoryDisplay';
 
 /**
  * Check if there's enough memory to load a model.
@@ -162,7 +162,9 @@ export const useMemoryCheck = (
           // Detailed message with numbers
           const neededText = formatBytes(requiredBytes, 1);
           const availableText = formatBytes(availableBytes, 1);
-          setMemoryWarning(`${l10n.memory.shortWarning} (Needed limit: ~${neededText}, Recommended limit: ~${availableText})`);
+          setMemoryWarning(
+            `${l10n.memory.shortWarning} (Needed limit: ~${neededText}, Recommended limit: ~${availableText})`,
+          );
         }
 
         // Additional check for multimodal capability

@@ -15,11 +15,11 @@ jest.mock('react-native-keyboard-controller', () => {
 jest.mock('react-native-reanimated', () => {
   const Reanimated = require('react-native-reanimated/mock');
 
-  Reanimated.default.call = () => { };
+  Reanimated.default.call = () => {};
 
   Reanimated.useReducedMotion = jest.fn(() => false);
 
-  Reanimated.useSharedValue = jest.fn(() => ({ value: 0 }));
+  Reanimated.useSharedValue = jest.fn(() => ({value: 0}));
   Reanimated.useAnimatedStyle = jest.fn(() => ({}));
   Reanimated.useAnimatedScrollHandler = jest.fn(() => ({}));
   Reanimated.useAnimatedProps = jest.fn(() => ({}));
@@ -38,15 +38,15 @@ jest.mock('@react-navigation/elements', () => ({
   useHeaderHeight: jest.fn().mockReturnValue(56), // Provide a mock return value
 }));
 
-import { mockUiStore } from '../__mocks__/stores/uiStore';
-import { mockHFStore } from '../__mocks__/stores/hfStore';
-import { mockModelStore } from '../__mocks__/stores/modelStore';
+import {mockUiStore} from '../__mocks__/stores/uiStore';
+import {mockHFStore} from '../__mocks__/stores/hfStore';
+import {mockModelStore} from '../__mocks__/stores/modelStore';
 import {
   mockChatSessionStore,
   mockDefaultCompletionSettings,
 } from '../__mocks__/stores/chatSessionStore';
-import { deepLinkStore as mockDeepLinkStore } from '../__mocks__/stores/deepLinkStore';
-import { mockServerStore } from '../__mocks__/stores/serverStore';
+import {deepLinkStore as mockDeepLinkStore} from '../__mocks__/stores/deepLinkStore';
+import {mockServerStore} from '../__mocks__/stores/serverStore';
 
 jest.mock('@react-native-clipboard/clipboard', () => mockClipboard);
 
@@ -56,7 +56,7 @@ jest.mock('react-native/Libraries/EventEmitter/NativeEventEmitter');
 jest.mock('../src/specs/NativeHardwareInfo', () => ({
   __esModule: true,
   default: {
-    getCPUInfo: jest.fn(() => Promise.resolve({ cores: 4 })),
+    getCPUInfo: jest.fn(() => Promise.resolve({cores: 4})),
     getGPUInfo: jest.fn(() =>
       Promise.resolve({
         renderer: 'Mock GPU',
@@ -78,18 +78,18 @@ jest.mock('../src/specs/NativeHardwareInfo', () => ({
 }));
 
 jest.mock('react-native-safe-area-context', () => {
-  const inset = { top: 0, right: 0, bottom: 0, left: 0 };
+  const inset = {top: 0, right: 0, bottom: 0, left: 0};
   return {
     ...jest.requireActual('react-native-safe-area-context'),
-    SafeAreaProvider: jest.fn(({ children }) => children),
-    SafeAreaConsumer: jest.fn(({ children }) => children(inset)),
+    SafeAreaProvider: jest.fn(({children}) => children),
+    SafeAreaConsumer: jest.fn(({children}) => children(inset)),
     useSafeAreaInsets: jest.fn(() => inset),
-    useSafeAreaFrame: jest.fn(() => ({ x: 0, y: 0, width: 390, height: 844 })),
+    useSafeAreaFrame: jest.fn(() => ({x: 0, y: 0, width: 390, height: 844})),
   };
 });
 
 jest.mock('../src/store', () => {
-  const { UIStore } = require('../__mocks__/stores/uiStore');
+  const {UIStore} = require('../__mocks__/stores/uiStore');
   return {
     modelStore: mockModelStore,
     UIStore,
@@ -104,7 +104,7 @@ jest.mock('../src/store', () => {
 });
 
 jest.mock('../src/hooks/useTheme', () => {
-  const { themeFixtures } = require('./fixtures/theme');
+  const {themeFixtures} = require('./fixtures/theme');
   return {
     useTheme: jest.fn().mockReturnValue(themeFixtures.lightTheme),
   };

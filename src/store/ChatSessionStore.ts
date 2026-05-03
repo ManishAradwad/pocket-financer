@@ -1,11 +1,11 @@
-import { makeAutoObservable, runInAction } from 'mobx';
-import { format, isToday, isYesterday } from 'date-fns';
+import {makeAutoObservable, runInAction} from 'mobx';
+import {format, isToday, isYesterday} from 'date-fns';
 import * as RNFS from '@dr.pogodin/react-native-fs';
 
-import { MessageType } from '../utils/types';
-import { CompletionParams } from '../utils/completionTypes';
-import { chatSessionRepository } from '../repositories/ChatSessionRepository';
-import { defaultCompletionParams } from '../utils/completionSettingsVersions';
+import {MessageType} from '../utils/types';
+import {CompletionParams} from '../utils/completionTypes';
+import {chatSessionRepository} from '../repositories/ChatSessionRepository';
+import {defaultCompletionParams} from '../utils/completionSettingsVersions';
 
 const NEW_SESSION_TITLE = 'New Session';
 const TITLE_LIMIT = 40;
@@ -40,7 +40,7 @@ const DEFAULT_GROUP_NAMES = {
   older: 'Older',
 };
 
-export const defaultCompletionSettings = { ...defaultCompletionParams };
+export const defaultCompletionSettings = {...defaultCompletionParams};
 delete defaultCompletionSettings.prompt;
 delete defaultCompletionSettings.stop;
 
@@ -332,7 +332,7 @@ class ChatSessionStore {
       }
     } else {
       // Always use the global settings for new sessions
-      const settings = { ...this.newChatCompletionSettings };
+      const settings = {...this.newChatCompletionSettings};
       await this.createNewSession(NEW_SESSION_TITLE, [message], settings);
     }
   }
@@ -361,7 +361,7 @@ class ChatSessionStore {
   }
 
   async resetNewChatCompletionSettings() {
-    this.newChatCompletionSettings = { ...defaultCompletionSettings };
+    this.newChatCompletionSettings = {...defaultCompletionSettings};
     await chatSessionRepository.saveGlobalCompletionSettings(
       this.newChatCompletionSettings,
     );
@@ -437,7 +437,7 @@ class ChatSessionStore {
     update: Partial<MessageType.Text>,
   ): void {
     // Store the latest update
-    this.pendingStreamingUpdate = { id, sessionId, update };
+    this.pendingStreamingUpdate = {id, sessionId, update};
 
     // If timer is already running, the update will be applied when it fires
     if (this.streamingThrottleTimer) {
@@ -470,7 +470,7 @@ class ChatSessionStore {
       return;
     }
 
-    const { id, sessionId, update } = this.pendingStreamingUpdate;
+    const {id, sessionId, update} = this.pendingStreamingUpdate;
     this.pendingStreamingUpdate = null;
 
     const targetSessionId = sessionId || this.activeSessionId;
@@ -882,7 +882,7 @@ class ChatSessionStore {
     sessionId?: string,
   ): Promise<CompletionParams> {
     // Start with system defaults
-    let resolvedSettings: CompletionParams = { ...defaultCompletionSettings };
+    let resolvedSettings: CompletionParams = {...defaultCompletionSettings};
 
     // Apply global user settings
     resolvedSettings = {
@@ -906,9 +906,7 @@ class ChatSessionStore {
    * Gets the effective completion settings for the current context
    */
   async getCurrentCompletionSettings(): Promise<CompletionParams> {
-    return this.resolveCompletionSettings(
-      this.activeSessionId || undefined,
-    );
+    return this.resolveCompletionSettings(this.activeSessionId || undefined);
   }
 }
 
