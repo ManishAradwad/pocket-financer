@@ -158,7 +158,9 @@ jobs:
         env:
           APP_RELEASE_STORE_PASSWORD: ci-dummy-password
           APP_RELEASE_KEY_PASSWORD: ci-dummy-password
-        run: ./gradlew assembleRelease --no-daemon
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleRelease --no-daemon
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
